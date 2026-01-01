@@ -33,9 +33,23 @@ vibecheck/
 
 ### Installation
 
+**Bash / macOS / Linux:**
 ```bash
 # Clone the repository
-git clone <repo-url>
+git clone https://github.com/ben-ingram/VibeCheck.git
+cd vibecheck
+
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+```
+
+**PowerShell (Windows):**
+```powershell
+# Clone the repository
+git clone https://github.com/ben-ingram/VibeCheck.git
 cd vibecheck
 
 # Install dependencies
@@ -49,21 +63,36 @@ pnpm build
 
 To quickly test the UI without scanning a real project:
 
+**Bash / macOS / Linux:**
 ```bash
-# Generate a demo artifact with sample findings
 pnpm --filter @vibecheck/cli exec vibecheck demo-artifact --out demo-artifact.json
+```
+
+**PowerShell (Windows):**
+```powershell
+pnpm --filter "@vibecheck/cli" exec vibecheck demo-artifact --out demo-artifact.json
 ```
 
 This creates `demo-artifact.json` with 7 realistic security findings across different severity levels.
 
 ### Scan a Real Project
 
+**Bash / macOS / Linux:**
 ```bash
 # Scan a project directory
 pnpm --filter @vibecheck/cli exec vibecheck scan /path/to/your/project --out scan-results.json
 
 # Or scan with repo name
 pnpm --filter @vibecheck/cli exec vibecheck scan . --repo-name my-project --out scan-results.json
+```
+
+**PowerShell (Windows):**
+```powershell
+# Scan a project directory
+pnpm --filter "@vibecheck/cli" exec vibecheck scan C:\path\to\your\project --out scan-results.json
+
+# Or scan with repo name
+pnpm --filter "@vibecheck/cli" exec vibecheck scan . --repo-name my-project --out scan-results.json
 ```
 
 #### CLI Options
@@ -109,6 +138,7 @@ VibeCheck is designed with privacy in mind:
 
 ### Scripts
 
+**Bash / macOS / Linux:**
 ```bash
 # Install all dependencies
 pnpm install
@@ -131,6 +161,32 @@ pnpm --filter @vibecheck/cli test
 # Run schema tests
 pnpm --filter @vibecheck/schema test
 ```
+
+**PowerShell (Windows):**
+```powershell
+# Install all dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Run the web UI in development mode
+pnpm dev:web
+
+# Type check all packages
+pnpm typecheck
+
+# Lint all packages
+pnpm lint
+
+# Run CLI tests
+pnpm --filter "@vibecheck/cli" test
+
+# Run schema tests
+pnpm --filter "@vibecheck/schema" test
+```
+
+> **Note for PowerShell users:** The `@` symbol has special meaning in PowerShell, so package filter names like `@vibecheck/cli` must be wrapped in quotes.
 
 ### Package Details
 
