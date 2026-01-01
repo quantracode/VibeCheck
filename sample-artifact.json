@@ -1,0 +1,234 @@
+{
+  "artifactVersion": "0.1",
+  "generatedAt": "2024-12-31T12:00:00.000Z",
+  "tool": {
+    "name": "vibecheck",
+    "version": "0.0.1"
+  },
+  "repo": {
+    "name": "sample-project",
+    "rootPathHash": "abc123hash"
+  },
+  "summary": {
+    "totalFindings": 7,
+    "bySeverity": {
+      "critical": 2,
+      "high": 2,
+      "medium": 2,
+      "low": 1,
+      "info": 0
+    },
+    "byCategory": {
+      "auth": 1,
+      "validation": 1,
+      "middleware": 1,
+      "secrets": 1,
+      "injection": 1,
+      "privacy": 1,
+      "config": 1,
+      "other": 0
+    }
+  },
+  "findings": [
+    {
+      "id": "finding-1",
+      "ruleId": "VC-AUTH-001",
+      "title": "Missing Authentication in Middleware",
+      "description": "Next.js middleware at /middleware.ts does not perform any authentication checks. All API routes may be accessible without authentication.",
+      "severity": "critical",
+      "confidence": 0.95,
+      "category": "auth",
+      "evidence": [
+        {
+          "file": "middleware.ts",
+          "startLine": 5,
+          "endLine": 8,
+          "snippet": "export function middleware(request: NextRequest) {\n  // Just pass through without any authentication checks\n  return NextResponse.next();\n}",
+          "label": "Middleware without auth check"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Add authentication checks to verify user session or API key before allowing requests to proceed.",
+        "patch": "import { getToken } from 'next-auth/jwt';\n\nexport async function middleware(request: NextRequest) {\n  const token = await getToken({ req: request });\n  if (!token) {\n    return NextResponse.redirect(new URL('/login', request.url));\n  }\n  return NextResponse.next();\n}"
+      },
+      "links": {
+        "owasp": "https://owasp.org/Top10/A01_2021-Broken_Access_Control/",
+        "cwe": "https://cwe.mitre.org/data/definitions/306.html"
+      },
+      "fingerprint": "abc123"
+    },
+    {
+      "id": "finding-2",
+      "ruleId": "VC-CONFIG-001",
+      "title": "Hardcoded Database Credentials in .env",
+      "description": "Found hardcoded database credentials in .env file. These should be stored in a secure secrets manager.",
+      "severity": "high",
+      "confidence": 0.88,
+      "category": "secrets",
+      "evidence": [
+        {
+          "file": ".env",
+          "startLine": 1,
+          "endLine": 1,
+          "snippet": "DATABASE_URL=postgresql://user:password123@localhost:5432/db",
+          "label": "Hardcoded credentials"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Use environment variables from a secure secrets manager or vault instead of hardcoded values."
+      },
+      "fingerprint": "def456"
+    },
+    {
+      "id": "finding-3",
+      "ruleId": "VC-HALL-001",
+      "title": "Unused Security Import: helmet",
+      "description": "The security library 'helmet' is imported but never used in the application. This may indicate incomplete security implementation.",
+      "severity": "medium",
+      "confidence": 0.92,
+      "category": "middleware",
+      "evidence": [
+        {
+          "file": "pages/api/test.ts",
+          "startLine": 2,
+          "endLine": 2,
+          "snippet": "import helmet from \"helmet\";",
+          "label": "Unused security import"
+        }
+      ],
+      "claim": {
+        "type": "OTHER",
+        "source": "import",
+        "scope": "module",
+        "strength": "weak",
+        "textEvidence": "import helmet from \"helmet\"",
+        "location": {
+          "file": "pages/api/test.ts",
+          "startLine": 2,
+          "endLine": 2
+        }
+      },
+      "remediation": {
+        "recommendedFix": "Either use the imported helmet middleware to add security headers, or remove the unused import."
+      },
+      "fingerprint": "ghi789"
+    },
+    {
+      "id": "finding-4",
+      "ruleId": "VC-INJECT-001",
+      "title": "Potential SQL Injection Vulnerability",
+      "description": "User input is directly concatenated into SQL query without parameterization.",
+      "severity": "critical",
+      "confidence": 0.85,
+      "category": "injection",
+      "evidence": [
+        {
+          "file": "lib/db.ts",
+          "startLine": 15,
+          "endLine": 17,
+          "snippet": "const query = `SELECT * FROM users WHERE id = '${userId}'`;\nawait db.execute(query);",
+          "label": "SQL string concatenation"
+        }
+      ],
+      "proof": {
+        "summary": "User input flows from API handler to SQL query without sanitization",
+        "nodes": [
+          {
+            "kind": "route",
+            "label": "User input received from request parameter",
+            "file": "pages/api/user.ts",
+            "line": 5
+          },
+          {
+            "kind": "function",
+            "label": "Input passed to database function without sanitization",
+            "file": "pages/api/user.ts",
+            "line": 10
+          },
+          {
+            "kind": "sink",
+            "label": "Input concatenated into SQL query string",
+            "file": "lib/db.ts",
+            "line": 15
+          }
+        ]
+      },
+      "remediation": {
+        "recommendedFix": "Use parameterized queries or prepared statements to prevent SQL injection.",
+        "patch": "const query = 'SELECT * FROM users WHERE id = $1';\nawait db.execute(query, [userId]);"
+      },
+      "links": {
+        "owasp": "https://owasp.org/Top10/A03_2021-Injection/",
+        "cwe": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "fingerprint": "jkl012"
+    },
+    {
+      "id": "finding-5",
+      "ruleId": "VC-XSS-001",
+      "title": "Potential XSS Vulnerability",
+      "description": "User input is rendered without sanitization, potentially allowing cross-site scripting attacks.",
+      "severity": "high",
+      "confidence": 0.78,
+      "category": "validation",
+      "evidence": [
+        {
+          "file": "components/Comment.tsx",
+          "startLine": 8,
+          "endLine": 8,
+          "snippet": "<div dangerouslySetInnerHTML={{ __html: comment.body }} />",
+          "label": "Dangerous HTML rendering"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Sanitize user-generated content before rendering. Use a library like DOMPurify to sanitize HTML."
+      },
+      "fingerprint": "mno345"
+    },
+    {
+      "id": "finding-6",
+      "ruleId": "VC-PRIVACY-001",
+      "title": "Logging Sensitive User Data",
+      "description": "User password is being logged to console, potentially exposing sensitive information.",
+      "severity": "medium",
+      "confidence": 0.90,
+      "category": "privacy",
+      "evidence": [
+        {
+          "file": "lib/auth.ts",
+          "startLine": 22,
+          "endLine": 22,
+          "snippet": "console.log('User login attempt:', { email, password });",
+          "label": "Sensitive data in logs"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Remove sensitive data from log statements. Only log non-sensitive identifiers."
+      },
+      "fingerprint": "pqr678"
+    },
+    {
+      "id": "finding-7",
+      "ruleId": "VC-CONFIG-002",
+      "title": "Insecure Cookie Configuration",
+      "description": "Session cookie is configured without secure flag and httpOnly, making it vulnerable to interception and XSS.",
+      "severity": "low",
+      "confidence": 0.82,
+      "category": "config",
+      "evidence": [
+        {
+          "file": "lib/session.ts",
+          "startLine": 10,
+          "endLine": 14,
+          "snippet": "const sessionOptions = {\n  cookieName: 'session',\n  password: process.env.SESSION_SECRET,\n  // missing secure and httpOnly\n};",
+          "label": "Insecure cookie config"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Enable secure and httpOnly flags for session cookies.",
+        "patch": "const sessionOptions = {\n  cookieName: 'session',\n  password: process.env.SESSION_SECRET,\n  cookieOptions: {\n    secure: process.env.NODE_ENV === 'production',\n    httpOnly: true,\n    sameSite: 'strict'\n  }\n};"
+      },
+      "fingerprint": "stu901"
+    }
+  ]
+}
