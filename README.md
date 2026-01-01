@@ -70,7 +70,7 @@ pnpm --filter @vibecheck/cli exec vibecheck demo-artifact --out demo-artifact.js
 
 **PowerShell (Windows):**
 ```powershell
-pnpm --filter "@vibecheck/cli" exec vibecheck demo-artifact --out demo-artifact.json
+node packages/cli/dist/index.js demo-artifact --out demo-artifact.json
 ```
 
 This creates `demo-artifact.json` with 7 realistic security findings across different severity levels.
@@ -89,10 +89,10 @@ pnpm --filter @vibecheck/cli exec vibecheck scan . --repo-name my-project --out 
 **PowerShell (Windows):**
 ```powershell
 # Scan a project directory
-pnpm --filter "@vibecheck/cli" exec vibecheck scan C:\path\to\your\project --out scan-results.json
+node packages/cli/dist/index.js scan C:\path\to\your\project --out scan-results.json
 
 # Or scan with repo name
-pnpm --filter "@vibecheck/cli" exec vibecheck scan . --repo-name my-project --out scan-results.json
+node packages/cli/dist/index.js scan . --repo-name my-project --out scan-results.json
 ```
 
 #### CLI Options
