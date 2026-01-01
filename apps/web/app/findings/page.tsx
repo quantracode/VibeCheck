@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FindingsTable } from "@/components/FindingsTable";
 import { EmptyState } from "@/components/EmptyState";
+import { PolicyEvaluator } from "@/components/PolicyEvaluator";
+import { WaiverManager } from "@/components/WaiverManager";
 
 const severityOptions: { value: SeverityFilter; label: string }[] = [
   { value: "all", label: "All Severities" },
@@ -128,6 +130,12 @@ export default function FindingsPage() {
           </p>
         </div>
       </div>
+
+      {/* Policy Gate */}
+      <PolicyEvaluator />
+
+      {/* Waivers Panel */}
+      <WaiverManager />
 
       {/* Filters */}
       <motion.div

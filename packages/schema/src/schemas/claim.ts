@@ -6,6 +6,7 @@ export const ClaimTypeSchema = z.enum([
   "CSRF_ENABLED",
   "RATE_LIMITED",
   "ENCRYPTED_AT_REST",
+  "MIDDLEWARE_PROTECTED",
   "OTHER",
 ]);
 

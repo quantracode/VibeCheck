@@ -25,13 +25,19 @@ export function fileExists(filePath: string): boolean {
 }
 
 /**
+ * Ensure a directory exists, creating it if necessary
+ */
+export function ensureDir(dirPath: string): void {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+}
+
+/**
  * Write content to file, creating directories as needed
  */
 export function writeFileSync(filePath: string, content: string): void {
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+  ensureDir(path.dirname(filePath));
   fs.writeFileSync(filePath, content, "utf-8");
 }
 

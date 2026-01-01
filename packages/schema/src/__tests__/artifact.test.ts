@@ -197,7 +197,7 @@ describe("FindingSchema", () => {
 
 describe("ScanArtifactSchema", () => {
   const validArtifact: ScanArtifact = {
-    artifactVersion: "0.1",
+    artifactVersion: "0.2",
     generatedAt: "2024-01-15T10:30:00.000Z",
     tool: {
       name: "vibecheck",
@@ -220,6 +220,10 @@ describe("ScanArtifactSchema", () => {
         injection: 0,
         privacy: 0,
         config: 0,
+        network: 0,
+        crypto: 0,
+        uploads: 0,
+        hallucinations: 0,
         other: 0,
       },
     },
@@ -301,6 +305,7 @@ describe("ScanArtifactSchema", () => {
       ...validArtifact,
       routeMap: [
         {
+          routeId: "r-001",
           method: "GET",
           path: "/api/users",
           handler: "getUsers",
@@ -344,7 +349,7 @@ describe("ScanArtifactSchema", () => {
 
 describe("validateArtifact", () => {
   const validArtifact = {
-    artifactVersion: "0.1",
+    artifactVersion: "0.2",
     generatedAt: "2024-01-15T10:30:00.000Z",
     tool: { name: "vibecheck", version: "1.0.0" },
     summary: {
@@ -358,6 +363,10 @@ describe("validateArtifact", () => {
         injection: 0,
         privacy: 0,
         config: 0,
+        network: 0,
+        crypto: 0,
+        uploads: 0,
+        hallucinations: 0,
         other: 0,
       },
     },
@@ -366,7 +375,7 @@ describe("validateArtifact", () => {
 
   it("returns parsed artifact for valid input", () => {
     const result = validateArtifact(validArtifact);
-    expect(result.artifactVersion).toBe("0.1");
+    expect(result.artifactVersion).toBe("0.2");
     expect(result.tool.name).toBe("vibecheck");
   });
 
@@ -386,7 +395,7 @@ describe("validateArtifact", () => {
 
 describe("safeValidateArtifact", () => {
   const validArtifact = {
-    artifactVersion: "0.1",
+    artifactVersion: "0.2",
     generatedAt: "2024-01-15T10:30:00.000Z",
     tool: { name: "vibecheck", version: "1.0.0" },
     summary: {
@@ -400,6 +409,10 @@ describe("safeValidateArtifact", () => {
         injection: 0,
         privacy: 0,
         config: 0,
+        network: 0,
+        crypto: 0,
+        uploads: 0,
+        hallucinations: 0,
         other: 0,
       },
     },
@@ -410,7 +423,7 @@ describe("safeValidateArtifact", () => {
     const result = safeValidateArtifact(validArtifact);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.artifactVersion).toBe("0.1");
+      expect(result.data.artifactVersion).toBe("0.2");
     }
   });
 
@@ -484,6 +497,6 @@ describe("computeSummary", () => {
 
 describe("ARTIFACT_VERSION constant", () => {
   it("is set to 0.1", () => {
-    expect(ARTIFACT_VERSION).toBe("0.1");
+    expect(ARTIFACT_VERSION).toBe("0.2");
   });
 });

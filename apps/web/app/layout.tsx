@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { StoreInitializer } from "@/components/StoreInitializer";
 import "./globals.css";
 
@@ -17,8 +15,14 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VibeCheck - Security Scan Viewer",
-  description: "View and analyze security scan artifacts",
+  title: "VibeCheck — Pre-Deploy Security Gate for AI-Generated Code",
+  description:
+    "VibeCheck is a local-first, pre-deploy security gate for AI-generated code. It detects hallucinated protections, missing enforcement, and security regressions before code ships.",
+  openGraph: {
+    title: "VibeCheck — Pre-Deploy Security Gate for AI-Generated Code",
+    description: "Verify what your code actually enforces — before it ships.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -33,16 +37,12 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
           <StoreInitializer />
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1 container py-8">{children}</main>
-            <Footer />
-          </div>
+          {children}
         </ThemeProvider>
       </body>
     </html>

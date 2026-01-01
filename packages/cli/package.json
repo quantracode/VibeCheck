@@ -24,6 +24,7 @@
     "vibecheck": "node ./dist/index.js"
   },
   "dependencies": {
+    "@vibecheck/policy": "workspace:*",
     "@vibecheck/schema": "workspace:*",
     "commander": "^12.1.0",
     "fast-glob": "^3.3.2",

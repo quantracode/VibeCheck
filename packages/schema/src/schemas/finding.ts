@@ -19,6 +19,10 @@ export const CategorySchema = z.enum([
   "injection",
   "privacy",
   "config",
+  "network",
+  "crypto",
+  "uploads",
+  "hallucinations",
   "other",
 ]);
 

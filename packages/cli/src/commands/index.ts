@@ -1,3 +1,6 @@
 export { registerScanCommand, executeScan, type ScanOptions } from "./scan.js";
 export { registerExplainCommand, executeExplain } from "./explain.js";
 export { registerDemoArtifactCommand, executeDemoArtifact } from "./demo-artifact.js";
+export { registerIntentCommand, executeIntent, type IntentOptions } from "./intent.js";
+export { registerEvaluateCommand, executeEvaluate, type EvaluateOptions } from "./evaluate.js";
+export { registerWaiversCommand } from "./waivers.js";

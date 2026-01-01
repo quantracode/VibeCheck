@@ -4,6 +4,9 @@ import {
   registerScanCommand,
   registerExplainCommand,
   registerDemoArtifactCommand,
+  registerIntentCommand,
+  registerEvaluateCommand,
+  registerWaiversCommand,
 } from "./commands/index.js";
 
 const program = new Command();
@@ -17,6 +20,9 @@ program
 registerScanCommand(program);
 registerExplainCommand(program);
 registerDemoArtifactCommand(program);
+registerIntentCommand(program);
+registerEvaluateCommand(program);
+registerWaiversCommand(program);
 
 // Parse arguments
 program.parse();

@@ -1,9 +1,13 @@
 import { z } from "zod";
 import { FindingSchema } from "./finding.js";
+import { ClaimTypeSchema, ClaimSourceSchema, ClaimScopeSchema, ClaimStrengthSchema } from "./claim.js";
+import { ProofTraceSchema } from "./proof-trace.js";
 
-export const ARTIFACT_VERSION = "0.1" as const;
+// Support both 0.1 and 0.2 artifact versions
+export const ARTIFACT_VERSION = "0.2" as const;
+export const SUPPORTED_VERSIONS = ["0.1", "0.2"] as const;
 
-export const ArtifactVersionSchema = z.literal(ARTIFACT_VERSION);
+export const ArtifactVersionSchema = z.enum(SUPPORTED_VERSIONS);
 
 export const ToolInfoSchema = z.object({
   name: z.string(),
@@ -39,6 +43,10 @@ export const CategoryCountsSchema = z.object({
   injection: z.number().int().nonnegative(),
   privacy: z.number().int().nonnegative(),
   config: z.number().int().nonnegative(),
+  network: z.number().int().nonnegative(),
+  crypto: z.number().int().nonnegative(),
+  uploads: z.number().int().nonnegative(),
+  hallucinations: z.number().int().nonnegative(),
   other: z.number().int().nonnegative(),
 });
 
@@ -48,20 +56,85 @@ export const SummarySchema = z.object({
   byCategory: CategoryCountsSchema,
 });
 
+// Phase 3: Enhanced Route Entry
 export const RouteEntrySchema = z.object({
+  routeId: z.string(),
   method: z.string(),
   path: z.string(),
-  handler: z.string(),
+  handler: z.string().optional(),
   file: z.string(),
-  line: z.number().int().positive(),
+  startLine: z.number().int().positive().optional(),
+  endLine: z.number().int().positive().optional(),
+  handlerSymbol: z.string().optional(),
+  // Deprecated: for backward compat with 0.1
+  line: z.number().int().positive().optional(),
   middleware: z.array(z.string()).optional(),
 });
 
+// Phase 3: Middleware Coverage Entry
+export const MiddlewareCoverageEntrySchema = z.object({
+  routeId: z.string(),
+  covered: z.boolean(),
+  reason: z.string().optional(),
+});
+
+// Phase 3: Enhanced Middleware Entry with coverage
 export const MiddlewareEntrySchema = z.object({
-  name: z.string(),
+  name: z.string().optional(),
   file: z.string(),
-  line: z.number().int().positive(),
+  line: z.number().int().positive().optional(),
+  matcher: z.array(z.string()).optional(),
   appliesTo: z.array(z.string()).optional(),
+});
+
+// Phase 3: Middleware Map
+export const MiddlewareMapSchema = z.object({
+  middlewareFile: z.string().optional(),
+  matcher: z.array(z.string()),
+  coverage: z.array(MiddlewareCoverageEntrySchema),
+});
+
+// Phase 3: Intent Entry for intentMap
+export const IntentEntrySchema = z.object({
+  intentId: z.string(),
+  type: ClaimTypeSchema,
+  scope: ClaimScopeSchema,
+  targetRouteId: z.string().optional(),
+  source: ClaimSourceSchema,
+  location: z.object({
+    file: z.string(),
+    startLine: z.number().int().positive(),
+    endLine: z.number().int().positive(),
+  }),
+  strength: ClaimStrengthSchema,
+  textEvidence: z.string(),
+});
+
+// Phase 3: Intent Map
+export const IntentMapSchema = z.object({
+  intents: z.array(IntentEntrySchema),
+});
+
+// Phase 3: Route Map
+export const RouteMapSchema = z.object({
+  routes: z.array(RouteEntrySchema),
+});
+
+// Phase 3: Extended Metrics with coverage stats
+export const CoverageMetricsSchema = z.object({
+  authCoverage: z.object({
+    totalStateChanging: z.number().int().nonnegative(),
+    protectedCount: z.number().int().nonnegative(),
+    unprotectedCount: z.number().int().nonnegative(),
+  }).optional(),
+  validationCoverage: z.object({
+    totalStateChanging: z.number().int().nonnegative(),
+    validatedCount: z.number().int().nonnegative(),
+  }).optional(),
+  middlewareCoverage: z.object({
+    totalApiRoutes: z.number().int().nonnegative(),
+    coveredApiRoutes: z.number().int().nonnegative(),
+  }).optional(),
 });
 
 export const MetricsSchema = z.object({
@@ -69,7 +142,7 @@ export const MetricsSchema = z.object({
   linesOfCode: z.number().int().nonnegative(),
   scanDurationMs: z.number().nonnegative(),
   rulesExecuted: z.number().int().nonnegative(),
-});
+}).merge(CoverageMetricsSchema);
 
 export const ScanArtifactSchema = z.object({
   artifactVersion: ArtifactVersionSchema,
@@ -78,11 +151,17 @@ export const ScanArtifactSchema = z.object({
   repo: RepoInfoSchema.optional(),
   summary: SummarySchema,
   findings: z.array(FindingSchema),
-  routeMap: z.array(RouteEntrySchema).optional(),
-  middlewareMap: z.array(MiddlewareEntrySchema).optional(),
-  proofTraces: z
-    .record(z.string(), z.object({ summary: z.string() }))
-    .optional(),
+  // Phase 3: Enhanced maps
+  routeMap: z.union([
+    z.array(RouteEntrySchema), // Legacy format (0.1)
+    RouteMapSchema,            // New format (0.2)
+  ]).optional(),
+  middlewareMap: z.union([
+    z.array(MiddlewareEntrySchema), // Legacy format (0.1)
+    MiddlewareMapSchema,            // New format (0.2)
+  ]).optional(),
+  intentMap: IntentMapSchema.optional(),
+  proofTraces: z.record(z.string(), ProofTraceSchema).optional(),
   metrics: MetricsSchema.optional(),
 });
 
@@ -94,6 +173,12 @@ export type CategoryCounts = z.infer<typeof CategoryCountsSchema>;
 export type Summary = z.infer<typeof SummarySchema>;
 export type RouteEntry = z.infer<typeof RouteEntrySchema>;
 export type MiddlewareEntry = z.infer<typeof MiddlewareEntrySchema>;
+export type MiddlewareCoverageEntry = z.infer<typeof MiddlewareCoverageEntrySchema>;
+export type MiddlewareMap = z.infer<typeof MiddlewareMapSchema>;
+export type IntentEntry = z.infer<typeof IntentEntrySchema>;
+export type IntentMap = z.infer<typeof IntentMapSchema>;
+export type RouteMap = z.infer<typeof RouteMapSchema>;
+export type CoverageMetrics = z.infer<typeof CoverageMetricsSchema>;
 export type Metrics = z.infer<typeof MetricsSchema>;
 export type ScanArtifact = z.infer<typeof ScanArtifactSchema>;
 
@@ -117,6 +202,10 @@ export function computeSummary(findings: z.infer<typeof FindingSchema>[]): z.inf
     injection: 0,
     privacy: 0,
     config: 0,
+    network: 0,
+    crypto: 0,
+    uploads: 0,
+    hallucinations: 0,
     other: 0,
   };
 

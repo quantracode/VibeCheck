@@ -44,6 +44,7 @@ export {
 // Artifact schemas and types
 export {
   ARTIFACT_VERSION,
+  SUPPORTED_VERSIONS,
   ArtifactVersionSchema,
   ToolInfoSchema,
   GitInfoSchema,
@@ -53,6 +54,12 @@ export {
   SummarySchema,
   RouteEntrySchema,
   MiddlewareEntrySchema,
+  MiddlewareCoverageEntrySchema,
+  MiddlewareMapSchema,
+  IntentEntrySchema,
+  IntentMapSchema,
+  RouteMapSchema,
+  CoverageMetricsSchema,
   MetricsSchema,
   ScanArtifactSchema,
   computeSummary,
@@ -64,6 +71,12 @@ export {
   type Summary,
   type RouteEntry,
   type MiddlewareEntry,
+  type MiddlewareCoverageEntry,
+  type MiddlewareMap,
+  type IntentEntry,
+  type IntentMap,
+  type RouteMap,
+  type CoverageMetrics,
   type Metrics,
   type ScanArtifact,
 } from "./artifact.js";
