@@ -116,15 +116,15 @@ export default function DashboardPage() {
       </div>
 
       {/* Upload Zone */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden shadow-elevation-2">
         <CardContent className="p-0">
           <motion.div
             className={cn(
-              "relative p-8 sm:p-12 transition-all duration-200 cursor-pointer border-2 border-dashed rounded-lg m-4",
-              uploadState === "dragging" && "border-primary bg-primary/5",
+              "relative p-8 sm:p-12 transition-all duration-200 cursor-pointer border-2 border-dashed rounded-xl m-4",
+              uploadState === "dragging" && "border-primary bg-primary/5 glow-primary",
               uploadState === "error" && "border-destructive bg-destructive/5",
-              uploadState === "success" && "border-green-500 bg-green-500/5",
-              uploadState === "idle" && "border-muted-foreground/25 hover:border-muted-foreground/50 hover:bg-muted/50"
+              uploadState === "success" && "border-success bg-success/5 glow-success",
+              uploadState === "idle" && "border-muted-foreground/25 hover:border-primary/40 hover:bg-muted/30"
             )}
             onDrop={handleDrop}
             onDragOver={(e) => { e.preventDefault(); setUploadState("dragging"); }}
@@ -203,7 +203,7 @@ export default function DashboardPage() {
           className="space-y-6"
         >
           {/* Summary Header */}
-          <Card>
+          <Card className="shadow-elevation-2">
             <CardContent className="p-6">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -388,9 +388,9 @@ function FeatureCard({ icon: Icon, title, description, command, href }: {
   href?: string;
 }) {
   const content = (
-    <Card className="h-full hover:bg-muted/50 transition-colors">
+    <Card className="h-full hover:shadow-elevation-2 hover:-translate-y-0.5 transition-all duration-200 group">
       <CardContent className="p-6">
-        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+        <div className="feature-icon w-12 h-12 mb-4 group-hover:scale-105 transition-transform">
           <Icon className="w-6 h-6 text-primary" />
         </div>
         <h3 className="text-lg font-semibold mb-2">{title}</h3>
@@ -416,12 +416,14 @@ function FeatureCard({ icon: Icon, title, description, command, href }: {
 function QuickLink({ href, icon: Icon, label }: { href: string; icon: typeof Terminal; label: string }) {
   return (
     <Link href={href}>
-      <Card className="hover:bg-muted/50 transition-colors">
+      <Card className="group hover:border-primary/30 hover:shadow-elevation-2 transition-all duration-200">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <Icon className="w-5 h-5 text-primary" />
+            <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors">
+              <Icon className="w-4 h-4 text-primary" />
+            </div>
             <span className="text-sm font-medium">{label}</span>
-            <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto" />
+            <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
           </div>
         </CardContent>
       </Card>

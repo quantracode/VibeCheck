@@ -23,14 +23,16 @@ export function Header() {
   const { setTheme, resolvedTheme } = useTheme();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        <div className="flex items-center gap-8 mr-8">
+        <div className="flex items-center gap-10 mr-8">
           <Link
             href="/"
-            className="flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+            className="flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm group"
           >
-            <Shield className="h-7 w-7 text-primary" />
+            <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors">
+              <Shield className="h-6 w-6 text-primary" />
+            </div>
             <span className="font-bold text-xl tracking-tight">VibeCheck</span>
           </Link>
 
@@ -46,14 +48,14 @@ export function Header() {
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors",
+                    "flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg transition-all duration-200",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/80"
                   )}
                 >
-                  <item.icon className="w-4 h-4" />
+                  <item.icon className={cn("w-4 h-4", isActive && "drop-shadow-sm")} />
                   {item.label}
                 </Link>
               );
@@ -63,7 +65,7 @@ export function Header() {
 
         <div className="flex-1" />
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <ArtifactSwitcher />
 
           <LicenseButton />
@@ -73,7 +75,7 @@ export function Header() {
             size="icon"
             onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
             aria-label="Toggle theme"
-            className="rounded-lg"
+            className="rounded-lg hover:bg-accent/80"
           >
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />

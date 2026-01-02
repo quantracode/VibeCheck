@@ -48,7 +48,7 @@ export function BestPracticePanel({ className }: BestPracticePanelProps) {
     <Card className={cn("border-emerald-500/30 bg-emerald-500/5", className)}>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
           Best Practice Architecture
         </CardTitle>
         <p className="text-sm text-muted-foreground">
@@ -69,8 +69,8 @@ export function BestPracticePanel({ className }: BestPracticePanelProps) {
         </div>
 
         {/* Key Principles */}
-        <div className="pt-3 border-t border-zinc-800">
-          <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-3">
+        <div className="pt-3 border-t border-border">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
             Security Principles
           </p>
           <div className="space-y-2">
@@ -124,35 +124,35 @@ function BestPracticeNodeRow({
             "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
             node.required
               ? "bg-emerald-500/20 border border-emerald-500/30"
-              : "bg-zinc-800/50 border border-zinc-700/50"
+              : "bg-muted/50 border border-border"
           )}
         >
           <Icon
             className={cn(
               "w-5 h-5",
-              node.required ? "text-emerald-400" : "text-zinc-500"
+              node.required ? "text-emerald-500 dark:text-emerald-400" : "text-muted-foreground"
             )}
           />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="font-medium text-sm text-zinc-200">{node.label}</p>
+            <p className="font-medium text-sm text-foreground">{node.label}</p>
             {node.required && (
-              <span className="px-1.5 py-0.5 text-[10px] font-medium bg-emerald-500/20 text-emerald-400 rounded">
+              <span className="px-1.5 py-0.5 text-[10px] font-medium bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 rounded">
                 Required
               </span>
             )}
           </div>
-          <p className="text-xs text-zinc-500 mt-0.5">{node.description}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{node.description}</p>
         </div>
       </div>
 
       {/* Connector arrow */}
       {!isLast && edge && (
         <div className="flex items-center gap-2 ml-5 py-1">
-          <div className="w-[2px] h-4 bg-zinc-700" />
-          <ArrowRight className="w-3 h-3 text-zinc-600" />
-          <span className="text-[10px] text-zinc-600">{edge.label}</span>
+          <div className="w-[2px] h-4 bg-border" />
+          <ArrowRight className="w-3 h-3 text-muted-foreground/50" />
+          <span className="text-[10px] text-muted-foreground/50">{edge.label}</span>
         </div>
       )}
     </motion.div>
@@ -168,10 +168,10 @@ function Principle({
 }) {
   return (
     <div className="flex items-start gap-2">
-      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" />
+      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 mt-0.5 shrink-0" />
       <div>
-        <p className="text-xs font-medium text-zinc-300">{title}</p>
-        <p className="text-[10px] text-zinc-500">{description}</p>
+        <p className="text-xs font-medium text-foreground/80">{title}</p>
+        <p className="text-[10px] text-muted-foreground">{description}</p>
       </div>
     </div>
   );

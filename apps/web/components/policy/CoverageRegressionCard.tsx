@@ -46,23 +46,23 @@ export function CoverageRegressionCard({ regressions, className }: CoverageRegre
   return (
     <Card className={cn(
       "border",
-      hasRegression ? "border-yellow-500/30 bg-yellow-500/5" : "border-zinc-800",
+      hasRegression ? "border-yellow-500/30 bg-yellow-500/5" : "border-border",
       className
     )}>
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-4">
           <Shield className={cn(
             "w-4 h-4",
-            hasRegression ? "text-yellow-400" : "text-zinc-400"
+            hasRegression ? "text-yellow-600 dark:text-yellow-400" : "text-muted-foreground"
           )} />
           <h4 className={cn(
             "text-sm font-medium",
-            hasRegression ? "text-yellow-400" : "text-zinc-400"
+            hasRegression ? "text-yellow-600 dark:text-yellow-400" : "text-muted-foreground"
           )}>
             Coverage Changes
           </h4>
           {hasRegression && (
-            <span className="px-2 py-0.5 text-xs bg-yellow-500/20 text-yellow-400 rounded">
+            <span className="px-2 py-0.5 text-xs bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 rounded">
               Regression Detected
             </span>
           )}
@@ -87,31 +87,31 @@ export function CoverageRegressionCard({ regressions, className }: CoverageRegre
                     ? "bg-yellow-500/10 border border-yellow-500/20"
                     : isImproved
                     ? "bg-emerald-500/10 border border-emerald-500/20"
-                    : "bg-zinc-800/50"
+                    : "bg-muted/50"
                 )}
               >
                 <div className="flex items-center gap-3">
                   <Icon className={cn(
                     "w-5 h-5",
                     isRegressed
-                      ? "text-yellow-400"
+                      ? "text-yellow-600 dark:text-yellow-400"
                       : isImproved
-                      ? "text-emerald-400"
-                      : "text-zinc-400"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-muted-foreground"
                   )} />
                   <div>
-                    <p className="text-sm font-medium text-zinc-200">
+                    <p className="text-sm font-medium text-foreground">
                       {config.label}
                     </p>
-                    <p className="text-xs text-zinc-500">{config.description}</p>
+                    <p className="text-xs text-muted-foreground">{config.description}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4">
                   {/* Baseline */}
                   <div className="text-right">
-                    <p className="text-xs text-zinc-500">Baseline</p>
-                    <p className="text-sm font-medium text-zinc-400">
+                    <p className="text-xs text-muted-foreground">Baseline</p>
+                    <p className="text-sm font-medium text-muted-foreground">
                       {Math.round(regression.baseline)}%
                     </p>
                   </div>
@@ -123,27 +123,27 @@ export function CoverageRegressionCard({ regressions, className }: CoverageRegre
                       ? "bg-yellow-500/20"
                       : isImproved
                       ? "bg-emerald-500/20"
-                      : "bg-zinc-700/50"
+                      : "bg-muted"
                   )}>
                     {isRegressed ? (
-                      <TrendingDown className="w-4 h-4 text-yellow-400" />
+                      <TrendingDown className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
                     ) : isImproved ? (
-                      <TrendingUp className="w-4 h-4 text-emerald-400" />
+                      <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     ) : (
-                      <Minus className="w-4 h-4 text-zinc-500" />
+                      <Minus className="w-4 h-4 text-muted-foreground" />
                     )}
                   </div>
 
                   {/* Current */}
                   <div className="text-right min-w-[60px]">
-                    <p className="text-xs text-zinc-500">Current</p>
+                    <p className="text-xs text-muted-foreground">Current</p>
                     <p className={cn(
                       "text-sm font-medium",
                       isRegressed
-                        ? "text-yellow-400"
+                        ? "text-yellow-600 dark:text-yellow-400"
                         : isImproved
-                        ? "text-emerald-400"
-                        : "text-zinc-200"
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-foreground"
                     )}>
                       {Math.round(regression.current)}%
                     </p>
@@ -153,10 +153,10 @@ export function CoverageRegressionCard({ regressions, className }: CoverageRegre
                   <div className={cn(
                     "px-2 py-1 rounded text-xs font-medium min-w-[50px] text-center",
                     isRegressed
-                      ? "bg-yellow-500/20 text-yellow-400"
+                      ? "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400"
                       : isImproved
-                      ? "bg-emerald-500/20 text-emerald-400"
-                      : "bg-zinc-700/50 text-zinc-400"
+                      ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                      : "bg-muted text-muted-foreground"
                   )}>
                     {regression.delta > 0 ? "+" : ""}{Math.round(regression.delta)}%
                   </div>

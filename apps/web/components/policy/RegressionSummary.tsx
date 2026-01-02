@@ -21,11 +21,11 @@ interface RegressionSummaryProps {
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
-  critical: "text-purple-400",
-  high: "text-red-400",
-  medium: "text-yellow-400",
-  low: "text-blue-400",
-  info: "text-zinc-400",
+  critical: "text-purple-600 dark:text-purple-400",
+  high: "text-red-600 dark:text-red-400",
+  medium: "text-yellow-600 dark:text-yellow-400",
+  low: "text-blue-600 dark:text-blue-400",
+  info: "text-muted-foreground",
 };
 
 export function RegressionSummary({ regression, className }: RegressionSummaryProps) {
@@ -41,7 +41,7 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
         {/* New Findings */}
         <Card className={cn(
           "border",
-          regression.newFindings.length > 0 ? "border-red-500/30 bg-red-500/5" : "border-zinc-800"
+          regression.newFindings.length > 0 ? "border-red-500/30 bg-red-500/5" : "border-border"
         )}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -49,14 +49,14 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
                 <p className="text-xs text-muted-foreground">New</p>
                 <p className={cn(
                   "text-2xl font-bold",
-                  regression.newFindings.length > 0 ? "text-red-400" : "text-zinc-400"
+                  regression.newFindings.length > 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"
                 )}>
                   {regression.newFindings.length}
                 </p>
               </div>
               <Plus className={cn(
                 "w-5 h-5",
-                regression.newFindings.length > 0 ? "text-red-400" : "text-zinc-600"
+                regression.newFindings.length > 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground/50"
               )} />
             </div>
           </CardContent>
@@ -65,7 +65,7 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
         {/* Resolved Findings */}
         <Card className={cn(
           "border",
-          regression.resolvedFindings.length > 0 ? "border-emerald-500/30 bg-emerald-500/5" : "border-zinc-800"
+          regression.resolvedFindings.length > 0 ? "border-emerald-500/30 bg-emerald-500/5" : "border-border"
         )}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -73,30 +73,30 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
                 <p className="text-xs text-muted-foreground">Resolved</p>
                 <p className={cn(
                   "text-2xl font-bold",
-                  regression.resolvedFindings.length > 0 ? "text-emerald-400" : "text-zinc-400"
+                  regression.resolvedFindings.length > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
                 )}>
                   {regression.resolvedFindings.length}
                 </p>
               </div>
               <Minus className={cn(
                 "w-5 h-5",
-                regression.resolvedFindings.length > 0 ? "text-emerald-400" : "text-zinc-600"
+                regression.resolvedFindings.length > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground/50"
               )} />
             </div>
           </CardContent>
         </Card>
 
         {/* Persisting */}
-        <Card className="border border-zinc-800">
+        <Card className="border border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Persisting</p>
-                <p className="text-2xl font-bold text-zinc-300">
+                <p className="text-2xl font-bold text-foreground/80">
                   {regression.persistingCount}
                 </p>
               </div>
-              <ArrowRight className="w-5 h-5 text-zinc-600" />
+              <ArrowRight className="w-5 h-5 text-muted-foreground/50" />
             </div>
           </CardContent>
         </Card>
@@ -108,7 +108,7 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
             ? "border-red-500/30 bg-red-500/5"
             : regression.netChange < 0
             ? "border-emerald-500/30 bg-emerald-500/5"
-            : "border-zinc-800"
+            : "border-border"
         )}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -117,20 +117,20 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
                 <p className={cn(
                   "text-2xl font-bold",
                   regression.netChange > 0
-                    ? "text-red-400"
+                    ? "text-red-600 dark:text-red-400"
                     : regression.netChange < 0
-                    ? "text-emerald-400"
-                    : "text-zinc-400"
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-muted-foreground"
                 )}>
                   {regression.netChange > 0 ? "+" : ""}{regression.netChange}
                 </p>
               </div>
               {regression.netChange > 0 ? (
-                <TrendingUp className="w-5 h-5 text-red-400" />
+                <TrendingUp className="w-5 h-5 text-red-600 dark:text-red-400" />
               ) : regression.netChange < 0 ? (
-                <TrendingDown className="w-5 h-5 text-emerald-400" />
+                <TrendingDown className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               ) : (
-                <ArrowRight className="w-5 h-5 text-zinc-600" />
+                <ArrowRight className="w-5 h-5 text-muted-foreground/50" />
               )}
             </div>
           </CardContent>
@@ -142,8 +142,8 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
         <Card className="border-yellow-500/30 bg-yellow-500/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle className="w-4 h-4 text-yellow-400" />
-              <h4 className="text-sm font-medium text-yellow-400">
+              <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+              <h4 className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
                 Severity Regressions ({regression.severityRegressions.length})
               </h4>
             </div>
@@ -154,20 +154,20 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="flex items-center gap-3 p-2 rounded-lg bg-zinc-900/50"
+                  className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
                 >
-                  <ArrowUpRight className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                  <ArrowUpRight className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-zinc-200 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {item.title}
                     </p>
-                    <p className="text-xs text-zinc-500">{item.ruleId}</p>
+                    <p className="text-xs text-muted-foreground">{item.ruleId}</p>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
                     <span className={SEVERITY_COLORS[item.previousSeverity]}>
                       {item.previousSeverity}
                     </span>
-                    <ArrowRight className="w-3 h-3 text-zinc-600" />
+                    <ArrowRight className="w-3 h-3 text-muted-foreground/50" />
                     <span className={SEVERITY_COLORS[item.currentSeverity]}>
                       {item.currentSeverity}
                     </span>
@@ -184,8 +184,8 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
         <Card className="border-red-500/30">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Plus className="w-4 h-4 text-red-400" />
-              <h4 className="text-sm font-medium text-red-400">
+              <Plus className="w-4 h-4 text-red-600 dark:text-red-400" />
+              <h4 className="text-sm font-medium text-red-600 dark:text-red-400">
                 New Findings ({regression.newFindings.length})
               </h4>
             </div>
@@ -196,7 +196,7 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.03 }}
-                  className="flex items-center gap-3 p-2 rounded-lg bg-zinc-900/50"
+                  className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
                 >
                   <span className={cn(
                     "w-2 h-2 rounded-full flex-shrink-0",
@@ -204,11 +204,11 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
                     item.severity === "high" && "bg-red-500",
                     item.severity === "medium" && "bg-yellow-500",
                     item.severity === "low" && "bg-blue-500",
-                    item.severity === "info" && "bg-zinc-500"
+                    item.severity === "info" && "bg-muted-foreground"
                   )} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-zinc-200 truncate">{item.title}</p>
-                    <p className="text-xs text-zinc-500">{item.ruleId}</p>
+                    <p className="text-sm text-foreground truncate">{item.title}</p>
+                    <p className="text-xs text-muted-foreground">{item.ruleId}</p>
                   </div>
                   <span className={cn("text-xs capitalize", SEVERITY_COLORS[item.severity])}>
                     {item.severity}
@@ -225,8 +225,8 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
         <Card className="border-emerald-500/30">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <h4 className="text-sm font-medium text-emerald-400">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <h4 className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
                 Resolved Findings ({regression.resolvedFindings.length})
               </h4>
             </div>
@@ -237,7 +237,7 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.03 }}
-                  className="flex items-center gap-3 p-2 rounded-lg bg-zinc-900/50"
+                  className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
                 >
                   <span className={cn(
                     "w-2 h-2 rounded-full flex-shrink-0",
@@ -245,13 +245,13 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
                     item.severity === "high" && "bg-red-500",
                     item.severity === "medium" && "bg-yellow-500",
                     item.severity === "low" && "bg-blue-500",
-                    item.severity === "info" && "bg-zinc-500"
+                    item.severity === "info" && "bg-muted-foreground"
                   )} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-zinc-200 truncate line-through opacity-60">
+                    <p className="text-sm text-foreground/60 truncate line-through">
                       {item.title}
                     </p>
-                    <p className="text-xs text-zinc-500">{item.ruleId}</p>
+                    <p className="text-xs text-muted-foreground">{item.ruleId}</p>
                   </div>
                   <span className={cn("text-xs capitalize opacity-60", SEVERITY_COLORS[item.severity])}>
                     {item.severity}
@@ -265,10 +265,10 @@ export function RegressionSummary({ regression, className }: RegressionSummaryPr
 
       {/* No Changes */}
       {!hasChanges && (
-        <Card className="border-zinc-800">
+        <Card className="border-border">
           <CardContent className="p-8 text-center">
-            <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-            <p className="text-zinc-400">No changes detected from baseline</p>
+            <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400 mx-auto mb-2" />
+            <p className="text-muted-foreground">No changes detected from baseline</p>
           </CardContent>
         </Card>
       )}

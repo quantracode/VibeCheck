@@ -31,11 +31,11 @@ interface SecurityGapsPanelProps {
 // ============================================================================
 
 const SEVERITY_COLORS: Record<Severity, string> = {
-  critical: "text-red-400 bg-red-500/10 border-red-500/30",
-  high: "text-orange-400 bg-orange-500/10 border-orange-500/30",
-  medium: "text-yellow-400 bg-yellow-500/10 border-yellow-500/30",
-  low: "text-blue-400 bg-blue-500/10 border-blue-500/30",
-  info: "text-zinc-400 bg-zinc-500/10 border-zinc-500/30",
+  critical: "text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/30",
+  high: "text-orange-600 dark:text-orange-400 bg-orange-500/10 border-orange-500/30",
+  medium: "text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 border-yellow-500/30",
+  low: "text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/30",
+  info: "text-muted-foreground bg-muted/50 border-border",
 };
 
 const SEVERITY_ICONS: Record<Severity, typeof AlertTriangle> = {
@@ -73,16 +73,16 @@ export function SecurityGapsPanel({
       <Card className={cn("border-emerald-500/30 bg-emerald-500/5", className)}>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Shield className="w-5 h-5 text-emerald-400" />
+            <Shield className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
             Security Analysis
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-3 p-4 rounded-lg bg-emerald-500/10">
-            <Shield className="w-8 h-8 text-emerald-400" />
+            <Shield className="w-8 h-8 text-emerald-500 dark:text-emerald-400" />
             <div>
-              <p className="font-medium text-emerald-400">No Gaps Detected</p>
-              <p className="text-sm text-zinc-400">
+              <p className="font-medium text-emerald-600 dark:text-emerald-400">No Gaps Detected</p>
+              <p className="text-sm text-muted-foreground">
                 Architecture follows security best practices
               </p>
             </div>
@@ -109,10 +109,10 @@ export function SecurityGapsPanel({
             className={cn(
               "w-5 h-5",
               criticalCount > 0
-                ? "text-red-400"
+                ? "text-red-500 dark:text-red-400"
                 : highCount > 0
-                  ? "text-orange-400"
-                  : "text-yellow-400"
+                  ? "text-orange-500 dark:text-orange-400"
+                  : "text-yellow-500 dark:text-yellow-400"
             )}
           />
           Security Gaps
@@ -127,13 +127,13 @@ export function SecurityGapsPanel({
           <SummaryStat
             label="Critical"
             count={criticalCount}
-            color="text-red-400"
+            color="text-red-600 dark:text-red-400"
           />
-          <SummaryStat label="High" count={highCount} color="text-orange-400" />
+          <SummaryStat label="High" count={highCount} color="text-orange-600 dark:text-orange-400" />
           <SummaryStat
             label="Medium"
             count={otherGaps.length}
-            color="text-yellow-400"
+            color="text-yellow-600 dark:text-yellow-400"
           />
         </div>
 
@@ -170,13 +170,13 @@ function SummaryStat({
     <div
       className={cn(
         "text-center py-2 rounded-lg",
-        count > 0 ? "bg-zinc-800/50" : "bg-zinc-900/50"
+        count > 0 ? "bg-muted/50" : "bg-muted/20"
       )}
     >
-      <p className={cn("text-lg font-bold", count > 0 ? color : "text-zinc-600")}>
+      <p className={cn("text-lg font-bold", count > 0 ? color : "text-muted-foreground/50")}>
         {count}
       </p>
-      <p className="text-[10px] text-zinc-500 uppercase tracking-wide">{label}</p>
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
     </div>
   );
 }
@@ -204,7 +204,7 @@ function GapCard({
         className={cn(
           "w-full text-left p-3 rounded-lg border transition-colors group",
           colorClass,
-          "hover:bg-zinc-800/50"
+          "hover:bg-muted/50"
         )}
       >
         <div className="flex items-start gap-3">
@@ -214,11 +214,11 @@ function GapCard({
               <p className="font-medium text-sm">{gap.title}</p>
               <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
             </div>
-            <p className="text-xs text-zinc-400 mt-0.5 line-clamp-2">
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
               {gap.description}
             </p>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-[10px] text-zinc-500">
+              <span className="text-[10px] text-muted-foreground">
                 {gap.affectedNodes.length} affected node
                 {gap.affectedNodes.length !== 1 ? "s" : ""}
               </span>
@@ -251,33 +251,33 @@ export function GapDetail({ gap, onHighlightNodes, className }: GapDetailProps) 
           <Icon className="w-5 h-5 mt-0.5 shrink-0" />
           <div>
             <h3 className="font-semibold">{gap.title}</h3>
-            <p className="text-sm text-zinc-400 mt-1">{gap.description}</p>
+            <p className="text-sm text-muted-foreground mt-1">{gap.description}</p>
           </div>
         </div>
       </div>
 
       <div>
-        <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
           Recommendation
         </p>
-        <p className="text-sm text-zinc-300">{gap.recommendation}</p>
+        <p className="text-sm text-foreground/90">{gap.recommendation}</p>
       </div>
 
       <div>
-        <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
           Affected Components ({gap.affectedNodes.length})
         </p>
         <div className="space-y-1 max-h-32 overflow-y-auto">
           {gap.affectedNodes.slice(0, 10).map((nodeId) => (
             <div
               key={nodeId}
-              className="text-xs font-mono text-zinc-400 bg-zinc-800/50 rounded px-2 py-1 truncate"
+              className="text-xs font-mono text-muted-foreground bg-muted/50 rounded px-2 py-1 truncate"
             >
               {nodeId}
             </div>
           ))}
           {gap.affectedNodes.length > 10 && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted-foreground">
               +{gap.affectedNodes.length - 10} more
             </p>
           )}

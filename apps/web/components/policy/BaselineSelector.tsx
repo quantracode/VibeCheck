@@ -51,11 +51,11 @@ export function BaselineSelector({
   };
 
   return (
-    <Card className={cn("border-zinc-800", className)}>
+    <Card className={cn("border-border", className)}>
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-4">
-          <GitCompare className="w-4 h-4 text-zinc-400" />
-          <h4 className="text-sm font-medium text-zinc-300">
+          <GitCompare className="w-4 h-4 text-muted-foreground" />
+          <h4 className="text-sm font-medium text-foreground">
             Comparison Setup
           </h4>
         </div>
@@ -63,30 +63,30 @@ export function BaselineSelector({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Current Artifact */}
           <div className="space-y-2">
-            <label className="text-xs text-zinc-500 uppercase tracking-wide">
+            <label className="text-xs text-muted-foreground uppercase tracking-wide">
               Current Artifact
             </label>
-            <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700">
+            <div className="p-3 rounded-lg bg-muted/50 border border-border">
               {currentArtifact ? (
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-blue-500/10">
-                    <FileJson className="w-4 h-4 text-blue-400" />
+                    <FileJson className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-zinc-200 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {currentArtifact.name}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-zinc-500">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Calendar className="w-3 h-3" />
                       {formatDate(currentArtifact.artifact.generatedAt)}
                     </div>
                   </div>
-                  <span className="px-2 py-1 text-xs bg-blue-500/10 text-blue-400 rounded">
+                  <span className="px-2 py-1 text-xs bg-blue-500/10 text-blue-500 dark:text-blue-400 rounded">
                     Current
                   </span>
                 </div>
               ) : (
-                <p className="text-sm text-zinc-500 text-center py-2">
+                <p className="text-sm text-muted-foreground text-center py-2">
                   No artifact selected
                 </p>
               )}
@@ -95,7 +95,7 @@ export function BaselineSelector({
 
           {/* Baseline Artifact */}
           <div className="space-y-2">
-            <label className="text-xs text-zinc-500 uppercase tracking-wide">
+            <label className="text-xs text-muted-foreground uppercase tracking-wide">
               Baseline Artifact
             </label>
             {baselineOptions.length > 0 ? (
@@ -103,19 +103,19 @@ export function BaselineSelector({
                 value={baselineArtifactId ?? "none"}
                 onValueChange={(v) => onBaselineChange(v === "none" ? null : v)}
               >
-                <SelectTrigger className="w-full bg-zinc-800/50 border-zinc-700">
+                <SelectTrigger className="w-full bg-muted/50 border-border">
                   <SelectValue placeholder="Select baseline..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">
-                    <span className="text-zinc-500">No baseline (skip regression)</span>
+                    <span className="text-muted-foreground">No baseline (skip regression)</span>
                   </SelectItem>
                   {baselineOptions.map((artifact) => (
                     <SelectItem key={artifact.id} value={artifact.id}>
                       <div className="flex items-center gap-2">
-                        <FileJson className="w-3 h-3 text-zinc-400" />
+                        <FileJson className="w-3 h-3 text-muted-foreground" />
                         <span className="truncate max-w-[200px]">{artifact.name}</span>
-                        <span className="text-xs text-zinc-500">
+                        <span className="text-xs text-muted-foreground">
                           {formatDate(artifact.artifact.generatedAt)}
                         </span>
                       </div>
@@ -124,8 +124,8 @@ export function BaselineSelector({
                 </SelectContent>
               </Select>
             ) : (
-              <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 border-dashed">
-                <p className="text-sm text-zinc-500 text-center">
+              <div className="p-3 rounded-lg bg-muted/50 border border-border border-dashed">
+                <p className="text-sm text-muted-foreground text-center">
                   Upload another artifact to compare
                 </p>
               </div>
@@ -135,9 +135,9 @@ export function BaselineSelector({
               <motion.div
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center justify-between p-2 rounded bg-zinc-800/30"
+                className="flex items-center justify-between p-2 rounded bg-muted/30"
               >
-                <div className="flex items-center gap-2 text-xs text-zinc-400">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <History className="w-3 h-3" />
                   <span>
                     {baselineArtifact.artifact.findings.length} findings in baseline
@@ -147,7 +147,7 @@ export function BaselineSelector({
                   variant="ghost"
                   size="sm"
                   onClick={() => onBaselineChange(null)}
-                  className="h-6 w-6 p-0 text-zinc-500 hover:text-zinc-300"
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                 >
                   <X className="w-3 h-3" />
                 </Button>

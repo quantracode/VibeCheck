@@ -49,7 +49,7 @@ const PROFILES: Array<{
 export function ProfileSelector({ value, onChange, className }: ProfileSelectorProps) {
   return (
     <div className={cn("space-y-2", className)}>
-      <label className="text-xs text-zinc-500 uppercase tracking-wide">
+      <label className="text-xs text-muted-foreground uppercase tracking-wide">
         Policy Profile
       </label>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -60,19 +60,19 @@ export function ProfileSelector({ value, onChange, className }: ProfileSelectorP
             blue: {
               bg: "bg-blue-500/10",
               border: "border-blue-500/50",
-              icon: "text-blue-400",
+              icon: "text-blue-500 dark:text-blue-400",
               ring: "ring-blue-500/30",
             },
             purple: {
               bg: "bg-purple-500/10",
               border: "border-purple-500/50",
-              icon: "text-purple-400",
+              icon: "text-purple-500 dark:text-purple-400",
               ring: "ring-purple-500/30",
             },
             emerald: {
               bg: "bg-emerald-500/10",
               border: "border-emerald-500/50",
-              icon: "text-emerald-400",
+              icon: "text-emerald-500 dark:text-emerald-400",
               ring: "ring-emerald-500/30",
             },
           };
@@ -88,7 +88,7 @@ export function ProfileSelector({ value, onChange, className }: ProfileSelectorP
                 "relative p-4 rounded-xl border-2 text-left transition-all",
                 isSelected
                   ? cn(colorClasses.bg, colorClasses.border, "ring-2", colorClasses.ring)
-                  : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700"
+                  : "bg-muted/30 border-border hover:border-muted-foreground/30 hover:bg-muted/50"
               )}
             >
               {isSelected && (
@@ -106,21 +106,21 @@ export function ProfileSelector({ value, onChange, className }: ProfileSelectorP
 
               <div className={cn(
                 "p-2 rounded-lg w-fit mb-2",
-                isSelected ? colorClasses.bg : "bg-zinc-800"
+                isSelected ? colorClasses.bg : "bg-muted"
               )}>
                 <Icon className={cn(
                   "w-5 h-5",
-                  isSelected ? colorClasses.icon : "text-zinc-400"
+                  isSelected ? colorClasses.icon : "text-muted-foreground"
                 )} />
               </div>
 
               <h4 className={cn(
                 "font-medium",
-                isSelected ? "text-zinc-100" : "text-zinc-300"
+                isSelected ? "text-foreground" : "text-foreground/80"
               )}>
                 {profile.label}
               </h4>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {profile.description}
               </p>
             </motion.button>
