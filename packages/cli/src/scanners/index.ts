@@ -14,6 +14,7 @@ export { hallucinationsPack } from "./hallucinations/index.js";
 export { middlewarePack } from "./middleware/index.js";
 export { cryptoPack } from "./crypto/index.js";
 export { uploadsPack } from "./uploads/index.js";
+export { abusePack } from "./abuse/index.js";
 
 // Import packs for aggregation
 import type { ScannerPack, Scanner } from "./types.js";
@@ -26,6 +27,7 @@ import { hallucinationsPack } from "./hallucinations/index.js";
 import { middlewarePack } from "./middleware/index.js";
 import { cryptoPack } from "./crypto/index.js";
 import { uploadsPack } from "./uploads/index.js";
+import { abusePack } from "./abuse/index.js";
 
 // Phase 3 scanners
 import {
@@ -46,6 +48,7 @@ export const ALL_SCANNER_PACKS: ScannerPack[] = [
   middlewarePack,
   cryptoPack,
   uploadsPack,
+  abusePack,
   // Phase 3 packs
   hallucinationsPackPhase3,
   authPackPhase3,
@@ -104,4 +107,9 @@ export const SUPPORTED_RULES = [
   // Uploads pack
   "VC-UP-001",
   "VC-UP-002",
+  // Abuse pack
+  "VC-ABUSE-001",
+  "VC-ABUSE-002",
+  "VC-ABUSE-003",
+  "VC-ABUSE-004",
 ] as const;

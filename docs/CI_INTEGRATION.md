@@ -8,13 +8,38 @@ VibeCheck is designed for CI/CD pipelines. This guide covers integration pattern
 # Install
 npm install -D @vibecheck/cli
 
-# Scan with policy enforcement
-npx vibecheck scan --policy strict
+# Scan and evaluate in one flow
+npx vibecheck scan --format both --out ./scan.json --fail-on off
+npx vibecheck evaluate --artifact ./scan.json --profile startup
 ```
 
-Exit code `0` = pass, `1` = policy violation, `2` = error.
+Exit codes:
+- `0` = pass
+- `1` = policy violation
+- `2` = error
 
 ## GitHub Actions
+
+### Official Workflow
+
+VibeCheck includes an official GitHub Actions workflow at `.github/workflows/vibecheck.yml`. This workflow:
+
+- Triggers on push to `main`/`master` and all pull requests
+- Builds the CLI from source
+- Runs security scan with both JSON and SARIF output
+- Downloads baseline from main branch for regression detection (PRs only)
+- Evaluates findings against the `startup` policy profile
+- Uploads SARIF results to GitHub Code Scanning (Security tab)
+- Uploads artifacts for audit trail
+
+To use it, simply copy the workflow to your repository:
+
+```bash
+mkdir -p .github/workflows
+cp node_modules/@vibecheck/cli/.github/workflows/vibecheck.yml .github/workflows/
+```
+
+Or use the workflow directly from this repository as a reference.
 
 ### Basic Integration
 
@@ -357,19 +382,33 @@ pipelines:
 
 ```bash
 vibecheck scan [path]           # Scan a directory (default: current)
-vibecheck scan --help           # Show all options
+vibecheck evaluate              # Evaluate scan artifact against policy
+vibecheck scan --help           # Show all scan options
+vibecheck evaluate --help       # Show all evaluate options
 ```
 
-### Options
+### Scan Options
 
 | Flag | Description |
 |------|-------------|
-| `-o, --output <file>` | Output artifact path |
-| `--policy [profile]` | Enable policy evaluation |
-| `--baseline <file>` | Compare against baseline scan |
-| `--format <format>` | Output format: `json` (default), `sarif` |
-| `--quiet` | Suppress stdout, only exit code |
-| `--verbose` | Show detailed scan progress |
+| `-o, --out <file>` | Output artifact path |
+| `--format <format>` | Output format: `json`, `sarif`, or `both` |
+| `--fail-on <severity>` | Exit non-zero if findings at severity: `off`, `info`, `low`, `medium`, `high`, `critical` |
+| `--emit-intent-map` | Include route map, intent claims, and coverage metrics |
+| `--exclude <patterns>` | Additional glob patterns to exclude |
+| `--include-tests` | Include test files in scan |
+
+### Evaluate Options
+
+| Flag | Description |
+|------|-------------|
+| `-a, --artifact <path>` | Path to scan artifact (required) |
+| `-b, --baseline <path>` | Path to baseline artifact for regression detection |
+| `-p, --profile <name>` | Policy profile: `startup`, `growth`, `strict` |
+| `-c, --config <path>` | Path to custom policy config (overrides profile) |
+| `-w, --waivers <path>` | Path to waivers file |
+| `-o, --out <path>` | Output policy report to file |
+| `-q, --quiet` | JSON output only (no console summary) |
 
 ### Exit Codes
 
@@ -477,7 +516,7 @@ For GitHub Code Scanning integration:
 
 ```yaml
 - name: Run VibeCheck
-  run: npx vibecheck scan --format sarif -o results.sarif
+  run: npx vibecheck scan --format sarif -o results.sarif --fail-on off
   continue-on-error: true
 
 - name: Upload SARIF
@@ -487,3 +526,55 @@ For GitHub Code Scanning integration:
 ```
 
 This displays findings directly in GitHub's Security tab and PR file views.
+
+## Two-Step Workflow: Scan + Evaluate
+
+For production CI pipelines, we recommend separating scan and policy evaluation:
+
+```yaml
+# Step 1: Scan (always succeeds, produces artifacts)
+- name: Run VibeCheck scan
+  run: |
+    npx vibecheck scan . \
+      --format both \
+      --out ./vibecheck-scan.json \
+      --fail-on off
+
+# Step 2: Evaluate (controls pass/fail based on policy)
+- name: Evaluate against policy
+  run: |
+    npx vibecheck evaluate \
+      --artifact ./vibecheck-scan.json \
+      --profile startup
+```
+
+Benefits:
+- **Artifacts always generated**: Even on policy failure, you get full scan results
+- **Flexible gating**: Change policy profile without re-scanning
+- **Baseline comparison**: Evaluate can compare against previous scans for regression detection
+- **Audit trail**: Separate scan artifacts and policy reports
+
+### With Baseline Comparison
+
+```yaml
+- name: Download baseline
+  uses: dawidd6/action-download-artifact@v6
+  with:
+    workflow: security.yml
+    branch: main
+    name: vibecheck-scan
+    path: ./baseline
+  continue-on-error: true
+
+- name: Evaluate with baseline
+  run: |
+    BASELINE_ARG=""
+    if [ -f "./baseline/vibecheck-scan.json" ]; then
+      BASELINE_ARG="--baseline ./baseline/vibecheck-scan.json"
+    fi
+
+    npx vibecheck evaluate \
+      --artifact ./vibecheck-scan.json \
+      --profile startup \
+      $BASELINE_ARG
+```

@@ -47,6 +47,7 @@ export const CategoryCountsSchema = z.object({
   crypto: z.number().int().nonnegative(),
   uploads: z.number().int().nonnegative(),
   hallucinations: z.number().int().nonnegative(),
+  abuse: z.number().int().nonnegative(),
   other: z.number().int().nonnegative(),
 });
 
@@ -206,6 +207,7 @@ export function computeSummary(findings: z.infer<typeof FindingSchema>[]): z.inf
     crypto: 0,
     uploads: 0,
     hallucinations: 0,
+    abuse: 0,
     other: 0,
   };
 

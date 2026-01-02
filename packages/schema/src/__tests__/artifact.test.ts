@@ -224,6 +224,7 @@ describe("ScanArtifactSchema", () => {
         crypto: 0,
         uploads: 0,
         hallucinations: 0,
+        abuse: 0,
         other: 0,
       },
     },
@@ -367,6 +368,7 @@ describe("validateArtifact", () => {
         crypto: 0,
         uploads: 0,
         hallucinations: 0,
+        abuse: 0,
         other: 0,
       },
     },
@@ -413,6 +415,7 @@ describe("safeValidateArtifact", () => {
         crypto: 0,
         uploads: 0,
         hallucinations: 0,
+        abuse: 0,
         other: 0,
       },
     },
@@ -496,7 +499,222 @@ describe("computeSummary", () => {
 });
 
 describe("ARTIFACT_VERSION constant", () => {
-  it("is set to 0.1", () => {
+  it("is set to 0.2", () => {
     expect(ARTIFACT_VERSION).toBe("0.2");
+  });
+});
+
+describe("Phase 3 schema fields", () => {
+  const baseArtifact = {
+    artifactVersion: "0.2" as const,
+    generatedAt: "2024-01-15T10:30:00.000Z",
+    tool: { name: "vibecheck", version: "1.0.0" },
+    summary: {
+      totalFindings: 0,
+      bySeverity: { critical: 0, high: 0, medium: 0, low: 0, info: 0 },
+      byCategory: {
+        auth: 0, validation: 0, middleware: 0, secrets: 0, injection: 0,
+        privacy: 0, config: 0, network: 0, crypto: 0, uploads: 0,
+        hallucinations: 0, abuse: 0, other: 0,
+      },
+    },
+    findings: [],
+  };
+
+  it("validates artifact without Phase 3 fields (backward compatibility)", () => {
+    const result = ScanArtifactSchema.safeParse(baseArtifact);
+    expect(result.success).toBe(true);
+  });
+
+  it("validates artifact with routeMap in new format", () => {
+    const artifact = {
+      ...baseArtifact,
+      routeMap: {
+        routes: [
+          {
+            routeId: "abc123",
+            method: "POST",
+            path: "/api/users",
+            file: "app/api/users/route.ts",
+            startLine: 10,
+            endLine: 20,
+          },
+        ],
+      },
+    };
+    const result = ScanArtifactSchema.safeParse(artifact);
+    expect(result.success).toBe(true);
+  });
+
+  it("validates artifact with middlewareMap in new format", () => {
+    const artifact = {
+      ...baseArtifact,
+      middlewareMap: {
+        middlewareFile: "middleware.ts",
+        matcher: ["/api/:path*", "/((?!_next|static).*)"],
+        coverage: [
+          { routeId: "abc123", covered: true },
+          { routeId: "def456", covered: false, reason: "Excluded by matcher" },
+        ],
+      },
+    };
+    const result = ScanArtifactSchema.safeParse(artifact);
+    expect(result.success).toBe(true);
+  });
+
+  it("validates artifact with intentMap", () => {
+    const artifact = {
+      ...baseArtifact,
+      intentMap: {
+        intents: [
+          {
+            intentId: "int-001",
+            type: "AUTH_ENFORCED",
+            scope: "route",
+            targetRouteId: "abc123",
+            source: "comment",
+            location: { file: "app/api/users/route.ts", startLine: 5, endLine: 5 },
+            strength: "medium",
+            textEvidence: "// @auth required",
+          },
+          {
+            intentId: "int-002",
+            type: "INPUT_VALIDATED",
+            scope: "module",
+            source: "import",
+            location: { file: "app/api/users/route.ts", startLine: 1, endLine: 1 },
+            strength: "medium",
+            textEvidence: "import { z } from 'zod'",
+          },
+        ],
+      },
+    };
+    const result = ScanArtifactSchema.safeParse(artifact);
+    expect(result.success).toBe(true);
+  });
+
+  it("validates artifact with proofTraces", () => {
+    const artifact = {
+      ...baseArtifact,
+      proofTraces: {
+        "abc123": {
+          summary: "Auth proven via getServerSession call",
+          nodes: [
+            { kind: "route", label: "POST /api/users", file: "route.ts", line: 10 },
+            { kind: "handler", label: "POST handler", file: "route.ts", line: 15 },
+            { kind: "function", label: "getServerSession", file: "auth.ts", line: 5 },
+          ],
+        },
+        "def456": {
+          summary: "No auth found",
+          nodes: [
+            { kind: "route", label: "GET /api/public" },
+          ],
+        },
+      },
+    };
+    const result = ScanArtifactSchema.safeParse(artifact);
+    expect(result.success).toBe(true);
+  });
+
+  it("validates artifact with coverage metrics", () => {
+    const artifact = {
+      ...baseArtifact,
+      metrics: {
+        filesScanned: 100,
+        linesOfCode: 5000,
+        scanDurationMs: 1234,
+        rulesExecuted: 25,
+        authCoverage: {
+          totalStateChanging: 10,
+          protectedCount: 8,
+          unprotectedCount: 2,
+        },
+        validationCoverage: {
+          totalStateChanging: 8,
+          validatedCount: 6,
+        },
+        middlewareCoverage: {
+          totalApiRoutes: 15,
+          coveredApiRoutes: 12,
+        },
+      },
+    };
+    const result = ScanArtifactSchema.safeParse(artifact);
+    expect(result.success).toBe(true);
+  });
+
+  it("validates full Phase 3 artifact with all fields", () => {
+    const artifact = {
+      ...baseArtifact,
+      repo: {
+        name: "my-app",
+        rootPathHash: "sha256:abc123",
+        git: { branch: "main", commit: "abc123", isDirty: false },
+      },
+      routeMap: {
+        routes: [
+          { routeId: "r1", method: "POST", path: "/api/users", file: "route.ts", startLine: 10, endLine: 20 },
+        ],
+      },
+      middlewareMap: {
+        middlewareFile: "middleware.ts",
+        matcher: ["/api/:path*"],
+        coverage: [{ routeId: "r1", covered: true }],
+      },
+      intentMap: {
+        intents: [
+          {
+            intentId: "i1",
+            type: "AUTH_ENFORCED",
+            scope: "route",
+            targetRouteId: "r1",
+            source: "comment",
+            location: { file: "route.ts", startLine: 5, endLine: 5 },
+            strength: "strong",
+            textEvidence: "// Protected by auth",
+          },
+        ],
+      },
+      proofTraces: {
+        "r1": {
+          summary: "Auth proven",
+          nodes: [{ kind: "handler", label: "POST", file: "route.ts", line: 10 }],
+        },
+      },
+      metrics: {
+        filesScanned: 50,
+        linesOfCode: 2500,
+        scanDurationMs: 500,
+        rulesExecuted: 25,
+        authCoverage: { totalStateChanging: 1, protectedCount: 1, unprotectedCount: 0 },
+        validationCoverage: { totalStateChanging: 1, validatedCount: 1 },
+        middlewareCoverage: { totalApiRoutes: 1, coveredApiRoutes: 1 },
+      },
+    };
+    const result = ScanArtifactSchema.safeParse(artifact);
+    expect(result.success).toBe(true);
+  });
+
+  it("still accepts legacy routeMap format (array)", () => {
+    const artifact = {
+      ...baseArtifact,
+      routeMap: [
+        { routeId: "r1", method: "GET", path: "/api/test", file: "test.ts", line: 5 },
+      ],
+    };
+    const result = ScanArtifactSchema.safeParse(artifact);
+    expect(result.success).toBe(true);
+  });
+
+  it("still accepts legacy middlewareMap format (array)", () => {
+    const artifact = {
+      ...baseArtifact,
+      middlewareMap: [
+        { name: "auth", file: "middleware.ts", line: 10, appliesTo: ["/api/*"] },
+      ],
+    };
+    const result = ScanArtifactSchema.safeParse(artifact);
+    expect(result.success).toBe(true);
   });
 });

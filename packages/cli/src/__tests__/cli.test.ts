@@ -15,7 +15,9 @@ function createScanOptions(overrides: Partial<ScanOptions> = {}): ScanOptions {
     format: "json",
     failOn: "critical",
     changed: false,
-    emitIntentMap: false,
+    emitRouteMap: true,
+    emitIntents: true,
+    emitTraces: true,
     exclude: [],
     includeTests: false,
     ...overrides,
@@ -548,6 +550,7 @@ describe("explain command", () => {
           crypto: 0,
           uploads: 0,
           hallucinations: 0,
+          abuse: 0,
           other: 0,
         },
       },
@@ -676,6 +679,264 @@ describe("artifact output shape", () => {
         expect(finding.evidence[0]).toHaveProperty("startLine");
         expect(finding.evidence[0]).toHaveProperty("endLine");
         expect(finding.evidence[0]).toHaveProperty("label");
+      }
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+});
+
+describe("Phase 3 features", () => {
+  it("emits routeMap by default", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vibecheck-test-"));
+    const outputPath = path.join(tmpDir, "scan.json");
+
+    // Create a Next.js App Router route file
+    fs.mkdirSync(path.join(tmpDir, "app", "api", "users"), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmpDir, "app", "api", "users", "route.ts"),
+      `export async function GET() { return Response.json({}); }
+export async function POST(req: Request) { return Response.json({}); }`
+    );
+
+    try {
+      const options = createScanOptions({
+        out: outputPath,
+        emitRouteMap: true,
+        emitIntents: true,
+        emitTraces: true,
+      });
+
+      const originalLog = console.log;
+      console.log = () => {};
+
+      await executeScan(tmpDir, options);
+
+      console.log = originalLog;
+
+      const artifact = JSON.parse(fs.readFileSync(outputPath, "utf-8"));
+
+      // Should have routeMap with routes
+      expect(artifact.routeMap).toBeDefined();
+      expect(artifact.routeMap.routes).toBeDefined();
+      expect(Array.isArray(artifact.routeMap.routes)).toBe(true);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  it("emits intentMap with intents from comments", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vibecheck-test-"));
+    const outputPath = path.join(tmpDir, "scan.json");
+
+    // Create a file with security intent comments
+    fs.writeFileSync(
+      path.join(tmpDir, "auth.ts"),
+      `// This function requires authentication
+export function protectedHandler() {
+  // validated input
+  return true;
+}`
+    );
+
+    try {
+      const options = createScanOptions({
+        out: outputPath,
+        emitRouteMap: true,
+        emitIntents: true,
+        emitTraces: true,
+      });
+
+      const originalLog = console.log;
+      console.log = () => {};
+
+      await executeScan(tmpDir, options);
+
+      console.log = originalLog;
+
+      const artifact = JSON.parse(fs.readFileSync(outputPath, "utf-8"));
+
+      // Should have intentMap with intents
+      expect(artifact.intentMap).toBeDefined();
+      expect(artifact.intentMap.intents).toBeDefined();
+      expect(Array.isArray(artifact.intentMap.intents)).toBe(true);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  it("emits proofTraces for route handlers", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vibecheck-test-"));
+    const outputPath = path.join(tmpDir, "scan.json");
+
+    // Create a Next.js App Router route file
+    fs.mkdirSync(path.join(tmpDir, "app", "api", "users"), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmpDir, "app", "api", "users", "route.ts"),
+      `export async function POST(req: Request) { return Response.json({}); }`
+    );
+
+    try {
+      const options = createScanOptions({
+        out: outputPath,
+        emitRouteMap: true,
+        emitIntents: true,
+        emitTraces: true,
+      });
+
+      const originalLog = console.log;
+      console.log = () => {};
+
+      await executeScan(tmpDir, options);
+
+      console.log = originalLog;
+
+      const artifact = JSON.parse(fs.readFileSync(outputPath, "utf-8"));
+
+      // Should have proofTraces
+      expect(artifact.proofTraces).toBeDefined();
+      expect(typeof artifact.proofTraces).toBe("object");
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  it("emits coverage metrics", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vibecheck-test-"));
+    const outputPath = path.join(tmpDir, "scan.json");
+
+    fs.writeFileSync(path.join(tmpDir, "app.ts"), `const x = 1;`);
+
+    try {
+      const options = createScanOptions({
+        out: outputPath,
+        emitRouteMap: true,
+        emitIntents: true,
+        emitTraces: true,
+      });
+
+      const originalLog = console.log;
+      console.log = () => {};
+
+      await executeScan(tmpDir, options);
+
+      console.log = originalLog;
+
+      const artifact = JSON.parse(fs.readFileSync(outputPath, "utf-8"));
+
+      // Should have coverage metrics in metrics
+      expect(artifact.metrics).toBeDefined();
+      if (artifact.metrics.authCoverage) {
+        expect(artifact.metrics.authCoverage).toHaveProperty("totalStateChanging");
+        expect(artifact.metrics.authCoverage).toHaveProperty("protectedCount");
+      }
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  it("skips routeMap when --no-emit-route-map is used", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vibecheck-test-"));
+    const outputPath = path.join(tmpDir, "scan.json");
+
+    fs.mkdirSync(path.join(tmpDir, "app", "api"), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmpDir, "app", "api", "route.ts"),
+      `export async function GET() { return Response.json({}); }`
+    );
+
+    try {
+      const options = createScanOptions({
+        out: outputPath,
+        emitRouteMap: false,
+        emitIntents: true,
+        emitTraces: true,
+      });
+
+      const originalLog = console.log;
+      console.log = () => {};
+
+      await executeScan(tmpDir, options);
+
+      console.log = originalLog;
+
+      const artifact = JSON.parse(fs.readFileSync(outputPath, "utf-8"));
+
+      // routeMap should be empty or have empty routes
+      if (artifact.routeMap) {
+        expect(artifact.routeMap.routes).toHaveLength(0);
+      }
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  it("skips intents when --no-emit-intents is used", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vibecheck-test-"));
+    const outputPath = path.join(tmpDir, "scan.json");
+
+    fs.writeFileSync(
+      path.join(tmpDir, "auth.ts"),
+      `// requires authentication
+export function handler() { return true; }`
+    );
+
+    try {
+      const options = createScanOptions({
+        out: outputPath,
+        emitRouteMap: true,
+        emitIntents: false,
+        emitTraces: true,
+      });
+
+      const originalLog = console.log;
+      console.log = () => {};
+
+      await executeScan(tmpDir, options);
+
+      console.log = originalLog;
+
+      const artifact = JSON.parse(fs.readFileSync(outputPath, "utf-8"));
+
+      // intentMap should be empty or have empty intents
+      if (artifact.intentMap) {
+        expect(artifact.intentMap.intents).toHaveLength(0);
+      }
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  it("skips traces when --no-emit-traces is used", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vibecheck-test-"));
+    const outputPath = path.join(tmpDir, "scan.json");
+
+    fs.mkdirSync(path.join(tmpDir, "app", "api"), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmpDir, "app", "api", "route.ts"),
+      `export async function POST() { return Response.json({}); }`
+    );
+
+    try {
+      const options = createScanOptions({
+        out: outputPath,
+        emitRouteMap: true,
+        emitIntents: true,
+        emitTraces: false,
+      });
+
+      const originalLog = console.log;
+      console.log = () => {};
+
+      await executeScan(tmpDir, options);
+
+      console.log = originalLog;
+
+      const artifact = JSON.parse(fs.readFileSync(outputPath, "utf-8"));
+
+      // proofTraces should be empty
+      if (artifact.proofTraces) {
+        expect(Object.keys(artifact.proofTraces)).toHaveLength(0);
       }
     } finally {
       fs.rmSync(tmpDir, { recursive: true });

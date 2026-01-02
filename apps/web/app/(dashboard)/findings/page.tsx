@@ -44,6 +44,11 @@ const categoryOptions: { value: CategoryFilter; label: string }[] = [
   { value: "injection", label: "Injection" },
   { value: "privacy", label: "Privacy" },
   { value: "config", label: "Config" },
+  { value: "network", label: "Network" },
+  { value: "crypto", label: "Crypto" },
+  { value: "uploads", label: "Uploads" },
+  { value: "hallucinations", label: "Hallucinations" },
+  { value: "abuse", label: "Abuse" },
   { value: "other", label: "Other" },
 ];
 

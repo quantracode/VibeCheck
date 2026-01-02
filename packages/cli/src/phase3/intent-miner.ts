@@ -365,7 +365,9 @@ export function mineAllIntentClaims(
 
   // Mine from all source files
   for (const file of ctx.fileIndex.allSourceFiles) {
-    const sourceFile = ctx.helpers.parseFile(file);
+    // allSourceFiles are relative paths, resolve to absolute for parseFile
+    const absolutePath = path.join(ctx.repoRoot, file);
+    const sourceFile = ctx.helpers.parseFile(absolutePath);
     if (!sourceFile) continue;
 
     const claims = mineIntentClaims(ctx, sourceFile, routes);

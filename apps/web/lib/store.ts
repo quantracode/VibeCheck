@@ -121,7 +121,7 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
 
 // Filter and sort types
 export type SeverityFilter = "all" | "critical" | "high" | "medium" | "low" | "info";
-export type CategoryFilter = "all" | "auth" | "validation" | "middleware" | "secrets" | "injection" | "privacy" | "config" | "other";
+export type CategoryFilter = "all" | "auth" | "validation" | "middleware" | "secrets" | "injection" | "privacy" | "config" | "network" | "crypto" | "uploads" | "hallucinations" | "abuse" | "other";
 
 export interface FindingsFilter {
   severity: SeverityFilter;

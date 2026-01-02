@@ -1,7 +1,7 @@
 import { findFiles, readJsonSync, resolvePath, fileExists, readFileSync } from "../../utils/file-utils.js";
 import { createAstHelpers } from "./ast-helpers.js";
 import { getDefaultExcludes, mergeExcludes, normalizePatterns } from "../../utils/exclude-patterns.js";
-import type { ScanContext, FileIndex, RepoMeta, FrameworkHints, PrismaSchemaInfo, PrismaModelInfo } from "../types.js";
+import type { ScanContext, FileIndex, RepoMeta, FrameworkHints, PrismaSchemaInfo, PrismaModelInfo, FileProgressCallback } from "../types.js";
 
 /**
  * Options for building scan context
@@ -11,6 +11,8 @@ export interface ScanContextOptions {
   excludePatterns?: string[];
   /** Include test files in scan */
   includeTests?: boolean;
+  /** Progress callback for file processing */
+  onFileProgress?: FileProgressCallback;
 }
 
 interface PackageJson {
@@ -192,7 +194,7 @@ export async function buildScanContext(
     Promise.resolve(buildRepoMeta(repoRoot)),
   ]);
 
-  const helpers = createAstHelpers(repoRoot);
+  const helpers = createAstHelpers(repoRoot, fileIndex.allSourceFiles.length, options.onFileProgress);
   const frameworkHints = buildFrameworkHints(repoRoot, repoMeta.dependencies, repoMeta.devDependencies);
   const prismaSchemaInfo = parsePrismaSchema(repoRoot);
 
@@ -203,5 +205,6 @@ export async function buildScanContext(
     helpers,
     frameworkHints,
     prismaSchemaInfo,
+    onFileProgress: options.onFileProgress,
   };
 }

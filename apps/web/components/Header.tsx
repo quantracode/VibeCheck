@@ -2,15 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield, LayoutDashboard, List, Moon, Sun } from "lucide-react";
+import { Shield, LayoutDashboard, List, Moon, Sun, Route, Lightbulb, ShieldCheck, Network } from "lucide-react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ArtifactSwitcher } from "./ArtifactSwitcher";
+import { LicenseButton } from "./license";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/findings", label: "Findings", icon: List },
+  { href: "/routes", label: "Routes", icon: Route },
+  { href: "/intents", label: "Intents", icon: Lightbulb },
+  { href: "/architecture", label: "Architecture", icon: Network },
+  { href: "/gate", label: "Gate", icon: ShieldCheck },
 ];
 
 export function Header() {
@@ -60,6 +65,8 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <ArtifactSwitcher />
+
+          <LicenseButton />
 
           <Button
             variant="ghost"

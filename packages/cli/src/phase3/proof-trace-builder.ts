@@ -74,11 +74,14 @@ export function buildRouteMap(ctx: ScanContext): RouteInfo[] {
   const routes: RouteInfo[] = [];
 
   for (const routeFile of ctx.fileIndex.routeFiles) {
-    const sourceFile = ctx.helpers.parseFile(routeFile);
+    // routeFiles are relative paths, need to resolve to absolute for parseFile
+    const absolutePath = path.join(ctx.repoRoot, routeFile);
+    const sourceFile = ctx.helpers.parseFile(absolutePath);
     if (!sourceFile) continue;
 
     const handlers = ctx.helpers.findRouteHandlers(sourceFile);
-    const relPath = path.relative(ctx.repoRoot, routeFile).replace(/\\/g, "/");
+    // routeFile is already relative to repoRoot, just normalize slashes
+    const relPath = routeFile.replace(/\\/g, "/");
     const routePath = filePathToRoutePath(relPath);
 
     for (const handler of handlers) {
@@ -107,10 +110,13 @@ export function buildMiddlewareMap(ctx: ScanContext): MiddlewareInfo[] {
     return middlewareList;
   }
 
-  const sourceFile = ctx.helpers.parseFile(ctx.fileIndex.middlewareFile);
+  // middlewareFile is a relative path, resolve to absolute for parseFile
+  const absolutePath = path.join(ctx.repoRoot, ctx.fileIndex.middlewareFile);
+  const sourceFile = ctx.helpers.parseFile(absolutePath);
   if (!sourceFile) return middlewareList;
 
-  const relPath = path.relative(ctx.repoRoot, ctx.fileIndex.middlewareFile).replace(/\\/g, "/");
+  // middlewareFile is already relative, just normalize slashes
+  const relPath = ctx.fileIndex.middlewareFile.replace(/\\/g, "/");
 
   // Find config.matcher export
   const matchers = extractMiddlewareMatchers(sourceFile);

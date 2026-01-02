@@ -31,6 +31,7 @@ import {
   mineAllIntentClaims,
 } from "../phase3/index.js";
 import { toSarif, sarifToJson } from "../utils/sarif-formatter.js";
+import { ScanProgress, Spinner } from "../utils/progress.js";
 
 /**
  * Valid output formats
@@ -56,8 +57,12 @@ export interface ScanOptions {
   failOn: FailThreshold;
   /** Only scan changed files (not implemented) */
   changed: boolean;
-  /** Include route map, intent claims, and coverage metrics */
-  emitIntentMap: boolean;
+  /** Include route map in output (default: true) */
+  emitRouteMap: boolean;
+  /** Include intent claims in output (default: true) */
+  emitIntents: boolean;
+  /** Include proof traces in output (default: true) */
+  emitTraces: boolean;
   /** Additional glob patterns to exclude */
   exclude: string[];
   /** Include test files in scan */
@@ -104,28 +109,82 @@ function getOutputPath(basePath: string, format: "json" | "sarif", targetDir: st
 }
 
 /**
- * Run all scanners and collect findings
+ * Run all scanners with file-level progress tracking
  */
-async function runScanners(context: ScanContext): Promise<Finding[]> {
+async function runScannersWithProgress(
+  baseContext: ScanContext,
+  totalFiles: number
+): Promise<Finding[]> {
   const allFindings: Finding[] = [];
   const seenFingerprints = new Set<string>();
 
-  for (const scanner of ALL_SCANNERS) {
-    try {
-      const findings = await scanner(context);
+  // Initialize progress display with file count
+  const progress = new ScanProgress(
+    ALL_SCANNER_PACKS.map((pack) => ({
+      id: pack.id,
+      name: pack.name,
+      scannerCount: pack.scanners.length,
+    })),
+    totalFiles
+  );
 
-      // Dedupe by fingerprint
-      for (const finding of findings) {
-        if (!seenFingerprints.has(finding.fingerprint)) {
-          seenFingerprints.add(finding.fingerprint);
-          allFindings.push(finding);
+  // Create file progress callback
+  const onFileProgress = (file: string, processed: number, total: number) => {
+    progress.onFileProgress(file, processed, total);
+  };
+
+  // Rebuild context with progress callback
+  const contextOptions: ScanContextOptions = {
+    onFileProgress,
+  };
+  const context = await buildScanContext(baseContext.repoRoot, {
+    ...contextOptions,
+    excludePatterns: [],
+    includeTests: false,
+  });
+  // Copy over the file index from base context (already computed)
+  Object.assign(context, {
+    fileIndex: baseContext.fileIndex,
+    repoMeta: baseContext.repoMeta,
+    frameworkHints: baseContext.frameworkHints,
+    prismaSchemaInfo: baseContext.prismaSchemaInfo,
+  });
+
+  progress.start();
+
+  // Iterate through packs for progress tracking
+  for (let packIndex = 0; packIndex < ALL_SCANNER_PACKS.length; packIndex++) {
+    const pack = ALL_SCANNER_PACKS[packIndex];
+    progress.startPack(packIndex);
+
+    for (let scannerIndex = 0; scannerIndex < pack.scanners.length; scannerIndex++) {
+      const scanner = pack.scanners[scannerIndex];
+      progress.startScanner(packIndex, scannerIndex);
+
+      try {
+        const findings = await scanner(context);
+        let newFindingsCount = 0;
+
+        // Dedupe by fingerprint
+        for (const finding of findings) {
+          if (!seenFingerprints.has(finding.fingerprint)) {
+            seenFingerprints.add(finding.fingerprint);
+            allFindings.push(finding);
+            newFindingsCount++;
+          }
         }
+
+        progress.completeScanner(packIndex, newFindingsCount);
+      } catch (error) {
+        // Log error but continue with other scanners
+        progress.completeScanner(packIndex, 0);
       }
-    } catch (error) {
-      // Log error but continue with other scanners
-      console.error(`Scanner error: ${error}`);
     }
+
+    progress.completePack(packIndex);
   }
+
+  progress.stop();
 
   return allFindings;
 }
@@ -372,39 +431,47 @@ export async function executeScan(
     console.warn("\x1b[33mWarning: --changed flag is not implemented yet\x1b[0m");
   }
 
-  console.log(`Scanning: ${absoluteTarget}`);
+  console.log(`\n\x1b[36m\x1b[1m  ╭${"─".repeat(88)}╮\x1b[0m`);
+  console.log(`\x1b[36m  │\x1b[0m  \x1b[1mVIBECHECK\x1b[0m ${" ".repeat(68)}\x1b[90mv0.0.1\x1b[0m  \x1b[36m│\x1b[0m`);
+  console.log(`\x1b[36m  │\x1b[0m  \x1b[90m${normalizePath(absoluteTarget).slice(0, 84).padEnd(84)}\x1b[0m  \x1b[36m│\x1b[0m`);
+  console.log(`\x1b[36m  ╰${"─".repeat(88)}╯\x1b[0m\n`);
+
   const startTime = Date.now();
 
-  // Build scan context options
+  // Build scan context with file index and helpers
+  const contextSpinner = new Spinner("Indexing source files");
+  contextSpinner.start();
+
+  // First build context without progress callback to get file count
   const contextOptions: ScanContextOptions = {
     excludePatterns: options.exclude,
     includeTests: options.includeTests,
   };
+  const initialContext = await buildScanContext(absoluteTarget, contextOptions);
+  const totalFiles = initialContext.fileIndex.allSourceFiles.length;
 
-  // Build scan context with file index and helpers
-  console.log("Building scan context...");
-  const context = await buildScanContext(absoluteTarget, contextOptions);
+  contextSpinner.succeed(`Indexed ${totalFiles} source files`);
 
-  console.log(`Found ${context.fileIndex.allSourceFiles.length} source files`);
-  console.log(`  - API routes: ${context.fileIndex.apiRouteFiles.length}`);
-  console.log(`  - Config files: ${context.fileIndex.configFiles.length}`);
-  console.log(`  - Framework: ${context.repoMeta.framework}`);
+  console.log(`\x1b[90m   ├─ API routes: ${initialContext.fileIndex.apiRouteFiles.length}\x1b[0m`);
+  console.log(`\x1b[90m   ├─ Config files: ${initialContext.fileIndex.configFiles.length}\x1b[0m`);
+  console.log(`\x1b[90m   └─ Framework: ${initialContext.repoMeta.framework}\x1b[0m`);
 
-  // Run scanners
-  console.log("\nRunning scanners...");
-  const findings = await runScanners(context);
+  // Run scanners with progress tracking
+  const findings = await runScannersWithProgress(initialContext, totalFiles);
 
   const endTime = Date.now();
   const scanDurationMs = endTime - startTime;
 
-  // Build Phase 3 data if requested
+  // Build Phase 3 data - enabled by default
   let phase3Data: Phase3Data | undefined;
-  if (options.emitIntentMap) {
-    console.log("\nBuilding intent map...");
-    const routeMapRaw = buildRouteMap(context);
-    const middlewareMapRaw = buildMiddlewareMap(context);
-    const intentMapRaw = mineAllIntentClaims(context, routeMapRaw);
-    const proofTracesRaw = buildAllProofTraces(context, routeMapRaw);
+  const shouldEmitPhase3 = options.emitRouteMap || options.emitIntents || options.emitTraces;
+  if (shouldEmitPhase3) {
+    const intentSpinner = new Spinner("Building route map and proof traces");
+    intentSpinner.start();
+    const routeMapRaw = buildRouteMap(initialContext);
+    const middlewareMapRaw = buildMiddlewareMap(initialContext);
+    const intentMapRaw = mineAllIntentClaims(initialContext, routeMapRaw);
+    const proofTracesRaw = buildAllProofTraces(initialContext, routeMapRaw);
     const coverageRaw = calculateCoverage(routeMapRaw, proofTracesRaw, middlewareMapRaw);
 
     // Convert to schema format
@@ -456,15 +523,16 @@ export async function executeScan(
       .filter((r) => proofTracesRaw.get(r.routeId)?.validationProven);
     const coveredApiRoutes = middlewareCoverage.filter((c) => c.covered);
 
+    // Build phase3Data with optional fields based on flags
     phase3Data = {
-      routeMap: { routes: routeMapRaw },
-      middlewareMap: {
+      routeMap: options.emitRouteMap ? { routes: routeMapRaw } : { routes: [] },
+      middlewareMap: options.emitRouteMap ? {
         middlewareFile: middlewareMapRaw[0]?.file,
         matcher: allMatchers,
         coverage: middlewareCoverage,
-      },
-      intentMap: { intents: intentMapRaw },
-      proofTraces: proofTracesRecord,
+      } : { matcher: [], coverage: [] },
+      intentMap: options.emitIntents ? { intents: intentMapRaw } : { intents: [] },
+      proofTraces: options.emitTraces ? proofTracesRecord : {},
       coverageMetrics: {
         authCoverage: {
           totalStateChanging: stateChangingRoutes.length,
@@ -484,19 +552,22 @@ export async function executeScan(
       },
     };
 
-    console.log(`  Routes: ${routeMapRaw.length}`);
-    console.log(`  Intents: ${intentMapRaw.length}`);
-    console.log(`  Auth coverage: ${Math.round(coverageRaw.authCoverage * 100)}%`);
+    const parts: string[] = [];
+    if (options.emitRouteMap) parts.push(`${routeMapRaw.length} routes`);
+    if (options.emitIntents) parts.push(`${intentMapRaw.length} intents`);
+    if (options.emitTraces) parts.push(`${Object.keys(proofTracesRecord).length} traces`);
+    intentSpinner.succeed(`Built Phase 3 data (${parts.join(", ")})`);
+    console.log(`\x1b[90m   └─ Auth coverage: ${Math.round(coverageRaw.authCoverage * 100)}%\x1b[0m`);
   }
 
   // Create artifact
   const artifact = createArtifact(
     findings,
     absoluteTarget,
-    context.fileIndex.allSourceFiles.length,
+    initialContext.fileIndex.allSourceFiles.length,
     options.repoName,
     {
-      filesScanned: context.fileIndex.allSourceFiles.length,
+      filesScanned: initialContext.fileIndex.allSourceFiles.length,
       scanDurationMs,
     },
     phase3Data
@@ -596,8 +667,28 @@ export function registerScanCommand(program: Command): void {
     )
     .option("--changed", "Only scan changed files (not implemented)")
     .option(
-      "--emit-intent-map",
-      "Include route map, intent claims, and coverage metrics in output"
+      "--emit-route-map",
+      "Include route map in output (default: true)"
+    )
+    .option(
+      "--no-emit-route-map",
+      "Exclude route map from output"
+    )
+    .option(
+      "--emit-intents",
+      "Include intent claims in output (default: true)"
+    )
+    .option(
+      "--no-emit-intents",
+      "Exclude intent claims from output"
+    )
+    .option(
+      "--emit-traces",
+      "Include proof traces in output (default: true)"
+    )
+    .option(
+      "--no-emit-traces",
+      "Exclude proof traces from output"
     )
     .addHelpText(
       "after",
@@ -614,6 +705,8 @@ Examples:
   $ vibecheck scan -e "**/legacy/**"            Exclude legacy directory
   $ vibecheck scan -e "**/*.old.ts" -e "**/v1/**"  Multiple excludes
   $ vibecheck scan --include-tests              Include test files
+  $ vibecheck scan --no-emit-intents            Skip intent mining
+  $ vibecheck scan --no-emit-traces             Skip proof trace building
 
 Default excludes:
   node_modules, dist, .git, build, .next, coverage, .turbo, .cache,
@@ -633,7 +726,9 @@ Default excludes:
         repoName: cmdOptions.repoName as string | undefined,
         failOn: cmdOptions.failOn as FailThreshold,
         changed: Boolean(cmdOptions.changed),
-        emitIntentMap: Boolean(cmdOptions.emitIntentMap),
+        emitRouteMap: cmdOptions.emitRouteMap !== false, // default true
+        emitIntents: cmdOptions.emitIntents !== false, // default true
+        emitTraces: cmdOptions.emitTraces !== false, // default true
         exclude: cmdOptions.exclude as string[],
         includeTests: Boolean(cmdOptions.includeTests),
       };

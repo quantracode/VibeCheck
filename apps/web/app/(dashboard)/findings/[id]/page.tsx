@@ -10,6 +10,12 @@ import {
   Lightbulb,
   Shield,
   Fingerprint,
+  Zap,
+  AlertTriangle,
+  ShieldOff,
+  Clock,
+  FileQuestion,
+  Lock,
 } from "lucide-react";
 import { useArtifactStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
@@ -18,7 +24,9 @@ import { SeverityBadge } from "@/components/SeverityBadge";
 import { ConfidenceMeter } from "@/components/ConfidenceMeter";
 import { EvidenceCard } from "@/components/EvidenceCard";
 import { ProofTraceTimeline } from "@/components/ProofTraceTimeline";
-import type { Finding, EvidenceItem } from "@vibecheck/schema";
+import { AbuseRiskBadge, AbuseCategoryLabel } from "@/components/AbuseRiskBadge";
+import { cn } from "@/lib/utils";
+import type { Finding, EvidenceItem, AbuseClassification } from "@vibecheck/schema";
 
 function ClaimSection({ claim }: { claim: NonNullable<Finding["claim"]> }) {
   return (
@@ -111,6 +119,96 @@ function RemediationSection({
             </pre>
           </div>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function AbuseClassificationSection({ classification }: { classification: AbuseClassification }) {
+  const enforcementIcons: Record<string, typeof Lock> = {
+    auth: Lock,
+    rate_limit: Clock,
+    request_size_limit: FileQuestion,
+    timeout: Clock,
+    input_validation: ShieldOff,
+  };
+
+  const enforcementLabels: Record<string, string> = {
+    auth: "Authentication",
+    rate_limit: "Rate Limiting",
+    request_size_limit: "Request Size Limit",
+    timeout: "Timeout",
+    input_validation: "Input Validation",
+  };
+
+  return (
+    <Card className="border-orange-500/30 bg-orange-500/5">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Zap className="w-5 h-5 text-orange-400" />
+          Compute Abuse Classification
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Risk and Category */}
+        <div className="flex flex-wrap items-center gap-3">
+          <AbuseRiskBadge
+            risk={classification.risk}
+            costAmplification={classification.costAmplification}
+            size="lg"
+          />
+          <AbuseCategoryLabel category={classification.category} />
+        </div>
+
+        {/* Cost Amplification Warning */}
+        {classification.costAmplification >= 50 && (
+          <div className="flex items-start gap-3 p-4 rounded-lg bg-orange-500/10 border border-orange-500/20">
+            <AlertTriangle className="w-5 h-5 text-orange-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="font-medium text-orange-400">
+                High Cost Amplification: {classification.costAmplification}x
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Each unprotected request to this endpoint may cost {classification.costAmplification} times
+                more than a typical request. Without rate limiting, this could lead to significant
+                financial damage from abuse.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Missing Enforcement */}
+        <div>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">
+            Missing Enforcement Controls
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {classification.missingEnforcement.map((control) => {
+              const Icon = enforcementIcons[control] || ShieldOff;
+              return (
+                <div
+                  key={control}
+                  className="flex items-center gap-2 p-3 rounded-lg border border-red-500/20 bg-red-500/5"
+                >
+                  <Icon className="w-4 h-4 text-red-400" />
+                  <span className="text-sm text-red-400">{enforcementLabels[control] || control}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Confidence */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Classification confidence:</span>
+          <span className={cn(
+            "font-medium",
+            classification.confidence >= 0.8 ? "text-emerald-400" :
+            classification.confidence >= 0.6 ? "text-yellow-400" : "text-orange-400"
+          )}>
+            {Math.round(classification.confidence * 100)}%
+          </span>
+        </div>
       </CardContent>
     </Card>
   );
@@ -255,6 +353,17 @@ export default function FindingDetailPage() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Abuse Classification */}
+      {finding.abuseClassification && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.12 }}
+        >
+          <AbuseClassificationSection classification={finding.abuseClassification} />
+        </motion.div>
+      )}
 
       {/* Claim */}
       {finding.claim && (

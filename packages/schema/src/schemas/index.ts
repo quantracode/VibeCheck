@@ -33,11 +33,17 @@ export {
   CategorySchema,
   RemediationSchema,
   ReferenceLinksSchema,
+  AbuseRiskSchema,
+  AbuseCategorySchema,
+  AbuseClassificationSchema,
   FindingSchema,
   type Severity,
   type Category,
   type Remediation,
   type ReferenceLinks,
+  type AbuseRisk,
+  type AbuseCategory,
+  type AbuseClassification,
   type Finding,
 } from "./finding.js";
 

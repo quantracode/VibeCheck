@@ -31,6 +31,7 @@ function createTestArtifact(findings: ScanArtifact["findings"] = []): ScanArtifa
     crypto: 0,
     uploads: 0,
     hallucinations: 0,
+    abuse: 0,
     other: 0,
   };
   for (const f of findings) {

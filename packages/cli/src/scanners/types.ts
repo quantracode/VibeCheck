@@ -322,6 +322,11 @@ export interface FrameworkHints {
 }
 
 /**
+ * Progress callback for file processing
+ */
+export type FileProgressCallback = (file: string, index: number, total: number) => void;
+
+/**
  * Context passed to each scanner
  */
 export interface ScanContext {
@@ -337,6 +342,8 @@ export interface ScanContext {
   frameworkHints: FrameworkHints;
   /** Prisma schema information if available */
   prismaSchemaInfo?: PrismaSchemaInfo;
+  /** Optional callback for file progress reporting */
+  onFileProgress?: FileProgressCallback;
 }
 
 /**

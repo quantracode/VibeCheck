@@ -6,6 +6,7 @@ import { FileCode, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SeverityBadge } from "./SeverityBadge";
 import { ConfidenceMeter } from "./ConfidenceMeter";
+import { CostAmplificationBadge } from "./AbuseRiskBadge";
 import type { Finding } from "@vibecheck/schema";
 
 interface FindingsTableProps {
@@ -45,6 +46,11 @@ export function FindingsTable({ findings, className }: FindingsTableProps) {
                       <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded-md capitalize">
                         {finding.category}
                       </span>
+                      {finding.abuseClassification && (
+                        <CostAmplificationBadge
+                          costAmplification={finding.abuseClassification.costAmplification}
+                        />
+                      )}
                     </div>
 
                     <h3 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">

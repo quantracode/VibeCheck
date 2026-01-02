@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { StoreInitializer } from "@/components/StoreInitializer";
+import { LicenseInitializer } from "@/components/license";
 import "./globals.css";
 
 const inter = Inter({
@@ -42,6 +43,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <StoreInitializer />
+          <LicenseInitializer />
           {children}
         </ThemeProvider>
       </body>

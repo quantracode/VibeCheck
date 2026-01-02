@@ -17,6 +17,7 @@ import type {
   WeakHashUsage,
   FileUploadHandler,
   PublicFileWrite,
+  FileProgressCallback,
 } from "../types.js";
 
 const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"] as const;
@@ -68,7 +69,11 @@ const CRITICAL_ENV_PATTERNS = /JWT|SESSION|NEXTAUTH|SECRET|AUTH|TOKEN|KEY|PASSWO
 /**
  * Create AST helpers with a ts-morph project
  */
-export function createAstHelpers(repoRoot: string): AstHelpers {
+export function createAstHelpers(
+  repoRoot: string,
+  totalFiles?: number,
+  onFileProgress?: FileProgressCallback
+): AstHelpers {
   const project = new Project({
     skipAddingFilesFromTsConfig: true,
     compilerOptions: {
@@ -80,6 +85,7 @@ export function createAstHelpers(repoRoot: string): AstHelpers {
   });
 
   const fileCache = new Map<string, SourceFile>();
+  let filesParsed = 0;
 
   function parseFile(filePath: string): SourceFile | null {
     if (fileCache.has(filePath)) {
@@ -89,8 +95,19 @@ export function createAstHelpers(repoRoot: string): AstHelpers {
     try {
       const sourceFile = project.addSourceFileAtPath(filePath);
       fileCache.set(filePath, sourceFile);
+      filesParsed++;
+
+      // Report progress if callback provided
+      if (onFileProgress && totalFiles) {
+        onFileProgress(filePath, filesParsed, totalFiles);
+      }
+
       return sourceFile;
     } catch {
+      filesParsed++;
+      if (onFileProgress && totalFiles) {
+        onFileProgress(filePath, filesParsed, totalFiles);
+      }
       return null;
     }
   }
