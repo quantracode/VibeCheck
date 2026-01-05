@@ -3,7 +3,7 @@
  * Normalizes 0.1 and 0.2 artifacts to be compatible with 0.3 schema
  */
 
-import type { ScanArtifact, CategoryCounts } from "@vibecheck/schema";
+import type { ScanArtifact } from "@vibecheck/schema";
 
 /**
  * Phase 4 categories that may be missing in older artifacts
@@ -14,29 +14,6 @@ const PHASE4_CATEGORIES = [
   "lifecycle",
   "supply-chain",
 ] as const;
-
-/**
- * All categories including Phase 4
- */
-const ALL_CATEGORIES: (keyof CategoryCounts)[] = [
-  "auth",
-  "validation",
-  "middleware",
-  "secrets",
-  "injection",
-  "privacy",
-  "config",
-  "network",
-  "crypto",
-  "uploads",
-  "hallucinations",
-  "abuse",
-  "correlation",
-  "authorization",
-  "lifecycle",
-  "supply-chain",
-  "other",
-];
 
 /**
  * Migrate an artifact from any supported version to be compatible with 0.3

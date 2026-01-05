@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { ScanArtifact, Finding, Severity } from "@vibecheck/schema";
+import type { ScanArtifact } from "@vibecheck/schema";
 import { evaluate, type ProfileName } from "@vibecheck/policy";
 import {
   evaluateWithWhatIf,

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Shield, Lock, UserCheck, AlertTriangle, ChevronRight, CheckCircle, XCircle } from "lucide-react";
+import { Lock, UserCheck, AlertTriangle, ChevronRight, CheckCircle, XCircle } from "lucide-react";
 
 export default function AuthorizationPage() {
   return (

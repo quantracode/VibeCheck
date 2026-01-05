@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   GitBranch,
   Search,
-  ChevronDown,
   Upload,
   FileSearch,
   AlertTriangle,
@@ -29,7 +28,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { TraceGraphView, TraceGraphLegend } from "@/components/TraceGraph";
 import { buildTraceGraph, type TraceGraph, type TraceGraphNode } from "@/lib/trace-graph-builder";
 import { cn } from "@/lib/utils";
-import type { RouteEntry, Finding } from "@vibecheck/schema";
+import type { Finding } from "@vibecheck/schema";
 
 // ============================================================================
 // Types

@@ -145,7 +145,6 @@ export function clearStoredLicense(): void {
 export const PLAN_DESCRIPTIONS: Record<PlanType, string> = {
   free: "Basic security scanning for individuals",
   pro: "Advanced features for professional developers",
-  enterprise: "Full suite for teams and organizations",
 };
 
 /**

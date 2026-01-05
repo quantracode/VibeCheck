@@ -5,7 +5,7 @@
  * This wraps the core @vibecheck/policy evaluator and applies What-If changes.
  */
 
-import type { ScanArtifact, Finding, Severity, Category } from "@vibecheck/schema";
+import type { ScanArtifact, Severity } from "@vibecheck/schema";
 import {
   evaluate,
   type PolicyReport,

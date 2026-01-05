@@ -80,7 +80,7 @@ export const FEATURES: Record<FeatureId, FeatureDefinition> = {
     id: "sso",
     name: "SSO Integration",
     description: "Single sign-on with SAML/OIDC providers",
-    minPlan: "enterprise",
+    minPlan: "pro",
     category: "enterprise",
     comingSoon: true,
   },
@@ -88,7 +88,7 @@ export const FEATURES: Record<FeatureId, FeatureDefinition> = {
     id: "audit_logs",
     name: "Audit Logs",
     description: "Comprehensive audit logging for compliance",
-    minPlan: "enterprise",
+    minPlan: "pro",
     category: "enterprise",
     comingSoon: true,
   },
@@ -96,7 +96,7 @@ export const FEATURES: Record<FeatureId, FeatureDefinition> = {
     id: "custom_rules",
     name: "Custom Rules",
     description: "Create custom security rules for your organization",
-    minPlan: "enterprise",
+    minPlan: "pro",
     category: "policy",
     comingSoon: true,
   },
@@ -109,7 +109,6 @@ export const FEATURES: Record<FeatureId, FeatureDefinition> = {
 const PLAN_HIERARCHY: Record<PlanType, number> = {
   free: 0,
   pro: 1,
-  enterprise: 2,
 };
 
 /**

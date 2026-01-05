@@ -37,7 +37,6 @@ export function WhatIfBadge({ findingId, className, showLabel = true }: WhatIfBa
   if (!override) return null;
 
   const config = ACTION_CONFIG[override.action];
-  const Icon = config.icon;
 
   return (
     <span

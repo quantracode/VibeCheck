@@ -5,7 +5,6 @@ import {
   FlaskConical,
   EyeOff,
   ArrowDown,
-  Shield,
   Folder,
   X,
   Trash2,

@@ -6,9 +6,7 @@ import {
   FlaskConical,
   Plus,
   Folder,
-  X,
   Info,
-  Download,
   Copy,
   CheckCircle2,
 } from "lucide-react";

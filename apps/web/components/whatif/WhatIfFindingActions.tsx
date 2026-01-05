@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { EyeOff, ArrowDown, Shield, X, FlaskConical, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,7 @@ const SEVERITY_COLORS: Record<Severity, string> = {
 };
 
 export function WhatIfFindingActions({ finding, className, compact = false }: WhatIfFindingActionsProps) {
-  const { isEnabled, addOverride, removeOverride, hasOverride, getOverride } = useWhatIfStore();
+  const { isEnabled, addOverride, removeOverride, getOverride } = useWhatIfStore();
   const [showReasonInput, setShowReasonInput] = useState<WhatIfAction | null>(null);
   const [reason, setReason] = useState("");
   const [targetSeverity, setTargetSeverity] = useState<Severity>(getLowerSeverity(finding.severity));

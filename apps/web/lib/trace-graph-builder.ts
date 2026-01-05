@@ -163,7 +163,7 @@ const GRAPH_PADDING = 80;
  * Nodes are organized in layers from top to bottom:
  * request -> middleware -> handler -> functions/validators -> sinks -> response
  */
-function applyDeterministicLayout(nodes: TraceGraphNode[], edges: TraceGraphEdge[]): void {
+function applyDeterministicLayout(nodes: TraceGraphNode[]): void {
   // Group nodes by layer
   const nodesByLayer = new Map<number, TraceGraphNode[]>();
   for (const node of nodes) {
@@ -174,7 +174,7 @@ function applyDeterministicLayout(nodes: TraceGraphNode[], edges: TraceGraphEdge
   }
 
   // Sort nodes within each layer alphabetically by label for determinism
-  for (const [layer, layerNodes] of nodesByLayer) {
+  for (const [, layerNodes] of nodesByLayer) {
     layerNodes.sort((a, b) => a.label.localeCompare(b.label));
   }
 
@@ -388,7 +388,7 @@ export function buildTraceGraph(
   });
 
   // Apply deterministic layout
-  applyDeterministicLayout(nodes, edges);
+  applyDeterministicLayout(nodes);
 
   return {
     routeId,
