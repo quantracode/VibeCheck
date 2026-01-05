@@ -83,7 +83,7 @@ export async function scanPostinstallScripts(context: ScanContext): Promise<Find
           startLine: 1,
           endLine: 1,
           snippet: `"${scriptKey}": "${script.length > 100 ? script.slice(0, 100) + "..." : script}"`,
-          context: "Install script definition",
+          label: "Install script definition",
         },
       ],
       remediation: {

@@ -110,7 +110,7 @@ export async function scanMultipleAuthSystems(context: ScanContext): Promise<Fin
         startLine: 1,
         endLine: 1,
         snippet: `"${pkgName}": "${allDeps[pkgName]}"`,
-        context: `${getGroupName(group as AuthLibraryGroup)} authentication library`,
+        label: `${getGroupName(group as AuthLibraryGroup)} authentication library`,
       });
     }
   }

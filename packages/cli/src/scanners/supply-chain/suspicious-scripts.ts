@@ -143,7 +143,7 @@ export async function scanSuspiciousScripts(context: ScanContext): Promise<Findi
           startLine: 1,
           endLine: 1,
           snippet: `${name}@${pkg.version} (hasInstallScripts: true)`,
-          context: isDirect ? "Direct dependency" : "Transitive dependency",
+          label: isDirect ? "Direct dependency" : "Transitive dependency",
         },
         ...(scriptContent
           ? [
@@ -155,7 +155,7 @@ export async function scanSuspiciousScripts(context: ScanContext): Promise<Findi
                   scriptContent.length > 200
                     ? scriptContent.slice(0, 200) + "..."
                     : scriptContent,
-                context: "Install script content",
+                label: "Install script content",
               },
             ]
           : []),

@@ -80,7 +80,7 @@ export async function scanVersionRanges(context: ScanContext): Promise<Finding[]
           startLine: 1,
           endLine: 1,
           snippet: `"${name}": "${version}"`,
-          context: `${isDevDep ? "devDependencies" : "dependencies"} - ${criticalInfo.reason}`,
+          label: `${isDevDep ? "devDependencies" : "dependencies"} - ${criticalInfo.reason}`,
         },
       ],
       remediation: {

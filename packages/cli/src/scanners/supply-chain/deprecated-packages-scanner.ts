@@ -77,7 +77,7 @@ export async function scanDeprecatedPackages(context: ScanContext): Promise<Find
           startLine: 1,
           endLine: 1,
           snippet: `"${name}": "${version}"`,
-          context: isDevDep ? "devDependencies" : "dependencies",
+          label: isDevDep ? "devDependencies" : "dependencies",
         },
       ],
       remediation: {
