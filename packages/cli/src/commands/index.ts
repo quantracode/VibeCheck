@@ -4,3 +4,7 @@ export { registerDemoArtifactCommand, executeDemoArtifact } from "./demo-artifac
 export { registerIntentCommand, executeIntent, type IntentOptions } from "./intent.js";
 export { registerEvaluateCommand, executeEvaluate, type EvaluateOptions } from "./evaluate.js";
 export { registerWaiversCommand } from "./waivers.js";
+export { registerViewCommand } from "./view.js";
+export { registerLicenseCommand } from "./license.js";
+export { registerVerifyDeterminismCommand, executeVerifyDeterminism, type VerifyDeterminismOptions } from "./verify-determinism.js";
+export { registerBadgeCommand, executeBadge, type BadgeOptions } from "./badge.js";

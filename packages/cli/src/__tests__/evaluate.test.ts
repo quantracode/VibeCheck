@@ -32,6 +32,11 @@ function createTestArtifact(findings: ScanArtifact["findings"] = []): ScanArtifa
     uploads: 0,
     hallucinations: 0,
     abuse: 0,
+    // Phase 4 categories
+    correlation: 0,
+    authorization: 0,
+    lifecycle: 0,
+    "supply-chain": 0,
     other: 0,
   };
   for (const f of findings) {
@@ -41,7 +46,7 @@ function createTestArtifact(findings: ScanArtifact["findings"] = []): ScanArtifa
   }
 
   return {
-    artifactVersion: "0.2",
+    artifactVersion: "0.3",
     generatedAt: new Date().toISOString(),
     tool: { name: "vibecheck", version: "0.0.1" },
     repo: { name: "test-repo", rootPathHash: "abc123" },

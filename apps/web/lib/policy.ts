@@ -126,12 +126,14 @@ export function computeExtendedRegression(
 export function evaluateArtifact(
   artifact: ScanArtifact,
   baseline: ScanArtifact | null,
-  profile: ProfileName
+  profile: ProfileName,
+  waivers?: import("@vibecheck/policy").Waiver[]
 ): PolicyReport {
   const input: EvaluateInput = {
     artifact,
     baseline: baseline ?? undefined,
     profile,
+    waivers,
   };
 
   return evaluate(input);

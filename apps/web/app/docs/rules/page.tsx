@@ -1,12 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Shield, AlertTriangle, Lock, Key, Network, Settings, Upload, Eye, Ghost } from "lucide-react";
+import { Shield, AlertTriangle, Lock, Key, Network, Settings, Upload, Eye, Ghost, UserCheck } from "lucide-react";
 import { useState } from "react";
 
 const categories = [
   { id: "all", name: "All Rules", icon: Shield },
   { id: "auth", name: "Authentication", icon: Lock },
+  { id: "authorization", name: "Authorization", icon: UserCheck },
   { id: "validation", name: "Validation", icon: AlertTriangle },
   { id: "privacy", name: "Privacy", icon: Eye },
   { id: "config", name: "Configuration", icon: Settings },
@@ -58,6 +59,39 @@ const rules = [
     severity: "high",
     description: "OAuth flow without state parameter for CSRF protection.",
     triggers: ["OAuth redirect without state", "State not validated on callback", "Predictable state values"],
+  },
+  // Authorization
+  {
+    id: "VC-AUTHZ-001",
+    title: "Admin Route Lacks Role Guard",
+    category: "authorization",
+    severity: "high",
+    description: "Route with 'admin' in path has authentication but no role verification.",
+    triggers: ["Admin path without role check", "getServerSession without role verification", "Missing admin role guard"],
+  },
+  {
+    id: "VC-AUTHZ-002",
+    title: "Ownership Check Missing",
+    category: "authorization",
+    severity: "critical",
+    description: "User ID extracted from request used for database operations without ownership verification.",
+    triggers: ["userId from body without session comparison", "IDOR vulnerability", "Missing ownership check in update/delete"],
+  },
+  {
+    id: "VC-AUTHZ-003",
+    title: "Role Declared But Not Enforced",
+    category: "authorization",
+    severity: "medium",
+    description: "Role types defined in codebase but not checked in route handlers.",
+    triggers: ["Role enum/type without enforcement", "Missing role checks in handlers", "Incomplete RBAC implementation"],
+  },
+  {
+    id: "VC-AUTHZ-004",
+    title: "Server Trusts Client-Provided User ID",
+    category: "authorization",
+    severity: "critical",
+    description: "POST handler uses userId from request body instead of authenticated session.",
+    triggers: ["authorId from request body", "userId from client for writes", "Missing session-derived identity"],
   },
   // Validation
   {

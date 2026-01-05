@@ -29,6 +29,11 @@ export const PolicyReasonSchema = z.object({
     "net_increase",
     "override_fail",
     "no_issues",
+    // Semantic regression codes
+    "protection_removed",
+    "coverage_decreased",
+    "severity_group_increase",
+    "semantic_regression",
   ]),
   /** Human-readable description */
   message: z.string(),
@@ -58,6 +63,44 @@ export const PolicySummaryCountsSchema = z.object({
   waived: z.number().int(),
   /** Count of ignored by override */
   ignored: z.number().int(),
+});
+
+/**
+ * Protection regression - protection removed from a route
+ */
+export const ProtectionRegressionSchema = z.object({
+  /** Route identifier (e.g., "/api/users:POST") */
+  routeId: z.string(),
+  /** File containing the route */
+  file: z.string(),
+  /** HTTP method */
+  method: z.string(),
+  /** Type of protection that was removed */
+  protectionType: z.enum(["auth", "validation", "rate-limit", "middleware"]),
+  /** Description of what changed */
+  description: z.string(),
+  /** Related finding fingerprints */
+  relatedFingerprints: z.array(z.string()).optional(),
+});
+
+/**
+ * Semantic regression - abstract security property that regressed
+ */
+export const SemanticRegressionSchema = z.object({
+  /** Type of semantic regression */
+  type: z.enum([
+    "protection_removed",    // Auth/validation removed from route
+    "coverage_decreased",    // Fewer routes protected
+    "severity_group_increase", // Multiple findings in same group got worse
+  ]),
+  /** Severity of this regression */
+  severity: SeveritySchema,
+  /** Human-readable description */
+  description: z.string(),
+  /** Route or fingerprint group affected */
+  affectedId: z.string(),
+  /** Detailed evidence */
+  details: z.record(z.unknown()).optional(),
 });
 
 /**
@@ -95,6 +138,10 @@ export const RegressionSummarySchema = z.object({
   })),
   /** Net change in finding count */
   netChange: z.number().int(),
+  /** Protection regressions (auth/validation removed from routes) */
+  protectionRegressions: z.array(ProtectionRegressionSchema).optional(),
+  /** Semantic regressions (abstract security property degradations) */
+  semanticRegressions: z.array(SemanticRegressionSchema).optional(),
 });
 
 /**
@@ -166,6 +213,8 @@ export const PolicyReportSchema = z.object({
 export type PolicyStatus = z.infer<typeof PolicyStatusSchema>;
 export type PolicyReason = z.infer<typeof PolicyReasonSchema>;
 export type PolicySummaryCounts = z.infer<typeof PolicySummaryCountsSchema>;
+export type ProtectionRegression = z.infer<typeof ProtectionRegressionSchema>;
+export type SemanticRegression = z.infer<typeof SemanticRegressionSchema>;
 export type RegressionSummary = z.infer<typeof RegressionSummarySchema>;
 export type WaivedFinding = z.infer<typeof WaivedFindingSchema>;
 export type PolicyReport = z.infer<typeof PolicyReportSchema>;

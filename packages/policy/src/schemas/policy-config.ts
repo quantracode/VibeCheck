@@ -69,6 +69,12 @@ export const RegressionPolicySchema = z.object({
   failOnNetIncrease: z.boolean().default(false),
   /** Warn on any new findings */
   warnOnNewFindings: z.boolean().default(true),
+  /** Fail on protection removed from routes (auth/validation coverage decreased) */
+  failOnProtectionRemoved: z.boolean().default(false),
+  /** Warn on protection removed from routes */
+  warnOnProtectionRemoved: z.boolean().default(true),
+  /** Fail on any semantic regression (coverage decrease, severity group increase) */
+  failOnSemanticRegression: z.boolean().default(false),
 });
 
 /**

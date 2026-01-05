@@ -1,13 +1,31 @@
-# @vibecheck/cli
+# @quantracode/vibecheck
 
 A deterministic, local-only security scanner for modern web applications. Designed to catch common security issues in Next.js, Express, and other Node.js projects with high precision and low false positives.
+
+## Quickstart (No Install)
+
+Run VibeCheck instantly without installation:
+
+```bash
+# Using npx
+npx @quantracode/vibecheck scan --fail-on off --out vibecheck-scan.json
+
+# Using pnpm dlx
+pnpm dlx @quantracode/vibecheck scan --fail-on off --out vibecheck-scan.json
+```
+
+### Scan Another Folder
+
+```bash
+npx @quantracode/vibecheck scan --target ../my-other-app --out scan.json
+```
 
 ## Installation
 
 ```bash
-npm install -g @vibecheck/cli
+npm install -g @quantracode/vibecheck
 # or
-pnpm add -g @vibecheck/cli
+pnpm add -g @quantracode/vibecheck
 ```
 
 ## Usage
@@ -45,6 +63,70 @@ vibecheck scan --emit-intent-map
 
 # Explain a scan report
 vibecheck explain ./scan.json
+
+# Start the web viewer
+vibecheck view
+
+# Open viewer with specific artifact
+vibecheck view -a ./scan.json
+```
+
+## View Command
+
+The `view` command starts a local web viewer to explore scan results interactively.
+
+```bash
+# Start viewer (auto-detects artifacts in current directory)
+vibecheck view
+
+# Specify artifact file explicitly
+vibecheck view -a ./vibecheck-scan.json
+vibecheck view --artifact ./scan-results.json
+
+# Use a different port
+vibecheck view --port 8080
+
+# Don't auto-open browser
+vibecheck view --no-open
+
+# Force update the viewer to latest version
+vibecheck view --update
+
+# Clear cached viewer files
+vibecheck view --clear-cache
+```
+
+### View Command Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-p, --port <port>` | Port to run the viewer on | `3000` |
+| `-a, --artifact <path>` | Path to artifact file to open | Auto-detected |
+| `--no-open` | Don't automatically open the browser | Opens browser |
+| `--update` | Force update the viewer to latest version | - |
+| `--clear-cache` | Clear the cached viewer and exit | - |
+
+### How It Works
+
+1. **Auto-download**: The viewer is automatically downloaded from npm on first run and cached in `~/.vibecheck/viewer/`
+2. **Auto-detect artifacts**: Looks for scan artifacts in common locations:
+   - `vibecheck-artifacts/artifact.json`
+   - `vibecheck-artifact.json`
+   - `.vibecheck/artifact.json`
+   - `scan-results.json`
+3. **Auto-load**: When an artifact is detected, it's automatically loaded into the viewer
+4. **Local-only**: The viewer runs entirely on your machine with no external connections
+
+### Workflow Example
+
+```bash
+# 1. Run a scan
+vibecheck scan --out vibecheck-artifacts/artifact.json
+
+# 2. View results (artifact auto-detected)
+vibecheck view
+
+# Browser opens to http://localhost:3000 with results loaded
 ```
 
 ### Command Line Options

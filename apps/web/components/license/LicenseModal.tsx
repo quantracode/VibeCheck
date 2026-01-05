@@ -13,25 +13,41 @@ import {
   Sparkles,
   Calendar,
   User,
-  Mail,
-  Copy,
   Check,
+  ExternalLink,
+  WifiOff,
+  BarChart3,
+  GitCompare,
+  Zap,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLicenseStore, useLicenseInfo } from "@/lib/license-store";
-import { PLAN_NAMES, generateDemoLicenseKey } from "@/lib/license";
-import { Card, CardContent } from "@/components/ui/card";
+import { PLAN_NAMES } from "@/lib/license";
 
 interface LicenseModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const FREE_FEATURES = [
+  { icon: Shield, text: "All 26 security scanners" },
+  { icon: Check, text: "Full vulnerability detection" },
+  { icon: Check, text: "Actionable remediation guides" },
+  { icon: Check, text: "CLI & CI/CD integration" },
+];
+
+const PRO_FEATURES = [
+  { icon: BarChart3, text: "Interactive architecture visualization" },
+  { icon: GitCompare, text: "Baseline comparison & regression detection" },
+  { icon: Sparkles, text: "Security score trends over time" },
+  { icon: Zap, text: "Priority support" },
+];
+
 export function LicenseModal({ isOpen, onClose }: LicenseModalProps) {
   const [licenseKey, setLicenseKey] = useState("");
-  const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const {
@@ -67,18 +83,6 @@ export function LicenseModal({ isOpen, onClose }: LicenseModalProps) {
 
   const handleDeactivate = () => {
     deactivateLicense();
-  };
-
-  const handleGenerateDemo = () => {
-    const demoKey = generateDemoLicenseKey("pro");
-    setLicenseKey(demoKey);
-  };
-
-  const handleCopyDemoKey = async () => {
-    const demoKey = generateDemoLicenseKey("pro");
-    await navigator.clipboard.writeText(demoKey);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   // Handle escape key
@@ -123,9 +127,9 @@ export function LicenseModal({ isOpen, onClose }: LicenseModalProps) {
                     <Key className="w-5 h-5 text-purple-400" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold">License</h2>
+                    <h2 className="text-lg font-semibold">VibeCheck License</h2>
                     <p className="text-xs text-muted-foreground">
-                      {isLicensed ? "Manage your license" : "Activate your license"}
+                      {isLicensed ? "Your license is active" : "Unlock Pro features"}
                     </p>
                   </div>
                 </div>
@@ -141,91 +145,142 @@ export function LicenseModal({ isOpen, onClose }: LicenseModalProps) {
               <div className="p-6 space-y-6">
                 {isLicensed && license ? (
                   /* Licensed View */
-                  <div className="space-y-4">
-                    {/* License Info Card */}
-                    <Card className="border-emerald-500/30 bg-emerald-500/5">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-3 mb-4">
-                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                          <span className="font-medium text-emerald-400">
-                            License Active
-                          </span>
-                          <span className="ml-auto px-2 py-1 text-xs font-medium rounded-full bg-emerald-500/20 text-emerald-400">
-                            {PLAN_NAMES[plan]}
-                          </span>
-                        </div>
+                  <div className="space-y-5">
+                    {/* Active License Card */}
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20">
+                      <div className="flex items-center gap-3 mb-4">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                        <span className="font-medium text-emerald-400">
+                          License Active
+                        </span>
+                        <span className="ml-auto px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-400">
+                          {PLAN_NAMES[plan]}
+                        </span>
+                      </div>
 
-                        <div className="space-y-3 text-sm">
+                      <div className="space-y-2.5 text-sm">
+                        {license.name && (
                           <div className="flex items-center gap-3 text-muted-foreground">
                             <User className="w-4 h-4" />
                             <span>{license.name}</span>
                           </div>
+                        )}
+                        {expiresAt && (
                           <div className="flex items-center gap-3 text-muted-foreground">
-                            <Mail className="w-4 h-4" />
-                            <span>{license.email}</span>
+                            <Calendar className="w-4 h-4" />
+                            <span>
+                              Valid until {expiresAt.toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                              {daysRemaining !== null && daysRemaining <= 30 && (
+                                <span className={cn(
+                                  "ml-2 text-xs",
+                                  daysRemaining <= 7 ? "text-red-400" : "text-yellow-500"
+                                )}>
+                                  ({daysRemaining} days remaining)
+                                </span>
+                              )}
+                            </span>
                           </div>
-                          {expiresAt && (
-                            <div className="flex items-center gap-3 text-muted-foreground">
-                              <Calendar className="w-4 h-4" />
-                              <span>
-                                Expires {expiresAt.toLocaleDateString()}
-                                {daysRemaining !== null && (
-                                  <span className={cn(
-                                    "ml-2",
-                                    daysRemaining <= 7 ? "text-yellow-500" : "text-muted-foreground"
-                                  )}>
-                                    ({daysRemaining} days remaining)
-                                  </span>
-                                )}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Renewal Notice */}
+                    {daysRemaining !== null && daysRemaining <= 14 && (
+                      <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
+                        <p className="text-sm text-yellow-500 font-medium mb-1">
+                          License expiring soon
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Visit the{" "}
+                          <a
+                            href="https://vibecheckpro.dev"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-400 hover:text-purple-300 underline underline-offset-2"
+                          >
+                            Pro Portal
+                          </a>
+                          {" "}to renew your license.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Local Verification */}
+                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-muted/50 text-xs text-muted-foreground">
+                      <Lock className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>Verified locally with cryptographic signatures. No network required.</span>
+                    </div>
 
                     {/* Actions */}
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 pt-2">
                       <Button
                         variant="outline"
                         onClick={handleDeactivate}
                         className="flex-1"
                       >
-                        Deactivate License
+                        Deactivate
                       </Button>
                       <Button
-                        variant="outline"
                         onClick={onClose}
                         className="flex-1"
                       >
-                        Close
+                        Done
                       </Button>
                     </div>
                   </div>
                 ) : (
                   /* Unlicensed View */
                   <div className="space-y-6">
-                    {/* Current Plan Badge */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-                      <Shield className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium">
-                          Current Plan: Free
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Basic features available
-                        </p>
+                    {/* Free vs Pro Comparison */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Free Plan */}
+                      <div className="p-4 rounded-xl bg-muted/50 border border-border">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Shield className="w-4 h-4 text-blue-400" />
+                          <span className="font-semibold text-sm">Free</span>
+                          <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium rounded bg-blue-500/20 text-blue-400">
+                            CURRENT
+                          </span>
+                        </div>
+                        <ul className="space-y-2">
+                          {FREE_FEATURES.map((feature, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                              <feature.icon className="w-3.5 h-3.5 mt-0.5 text-emerald-400 flex-shrink-0" />
+                              <span>{feature.text}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Pro Plan */}
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Sparkles className="w-4 h-4 text-purple-400" />
+                          <span className="font-semibold text-sm">Pro</span>
+                        </div>
+                        <ul className="space-y-2">
+                          {PRO_FEATURES.map((feature, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                              <feature.icon className="w-3.5 h-3.5 mt-0.5 text-purple-400 flex-shrink-0" />
+                              <span>{feature.text}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
 
                     {/* License Input */}
                     <div className="space-y-3">
                       <label className="text-sm font-medium">
-                        Enter License Key
+                        Have a license key?
                       </label>
                       <Input
                         type="text"
-                        placeholder="XXXX-XXXX-XXXX-XXXX..."
+                        placeholder="Paste your license key here..."
                         value={licenseKey}
                         onChange={(e) => setLicenseKey(e.target.value)}
                         className="font-mono text-sm"
@@ -237,7 +292,7 @@ export function LicenseModal({ isOpen, onClose }: LicenseModalProps) {
                           animate={{ opacity: 1, y: 0 }}
                           className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20"
                         >
-                          <AlertCircle className="w-4 h-4 text-red-400" />
+                          <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
                           <span className="text-sm text-red-400">{error}</span>
                         </motion.div>
                       )}
@@ -261,51 +316,26 @@ export function LicenseModal({ isOpen, onClose }: LicenseModalProps) {
                       </Button>
                     </div>
 
-                    {/* Demo Key */}
-                    <div className="pt-4 border-t border-border">
-                      <p className="text-xs text-muted-foreground mb-3">
-                        For testing, generate a demo license:
-                      </p>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleGenerateDemo}
-                          className="flex-1"
-                        >
-                          <Sparkles className="w-3 h-3 mr-2" />
-                          Generate Demo Key
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleCopyDemoKey}
-                        >
-                          {copied ? (
-                            <Check className="w-3 h-3" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Get License CTA */}
-                    <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20">
-                      <h4 className="font-medium mb-1">
-                        Need a license?
-                      </h4>
-                      <p className="text-xs text-muted-foreground mb-3">
-                        Get Pro features for professional security scanning
+                    {/* Get Pro CTA */}
+                    <div className="text-center pt-2">
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Don't have a license?
                       </p>
                       <a
-                        href="https://vibecheck.dev/pricing"
+                        href="https://vibecheckpro.dev"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-purple-500 hover:text-purple-400 transition-colors"
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-400 hover:text-purple-300 transition-colors"
                       >
-                        View pricing →
+                        Get VibeCheck Pro
+                        <ExternalLink className="w-3.5 h-3.5" />
                       </a>
+                    </div>
+
+                    {/* Local Verification Note */}
+                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-muted/50 text-xs text-muted-foreground">
+                      <WifiOff className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>Licenses are verified locally. No internet connection required.</span>
                     </div>
                   </div>
                 )}

@@ -36,6 +36,8 @@ export {
   AbuseRiskSchema,
   AbuseCategorySchema,
   AbuseClassificationSchema,
+  CorrelationPatternSchema,
+  CorrelationDataSchema,
   FindingSchema,
   type Severity,
   type Category,
@@ -44,8 +46,24 @@ export {
   type AbuseRisk,
   type AbuseCategory,
   type AbuseClassification,
+  type CorrelationPattern,
+  type CorrelationData,
   type Finding,
 } from "./finding.js";
+
+// Supply chain schemas and types (Phase 4)
+export {
+  DependencyRiskIndicatorSchema,
+  DependencyInfoSchema,
+  LockfileInfoSchema,
+  PackageJsonInfoSchema,
+  SupplyChainInfoSchema,
+  type DependencyRiskIndicator,
+  type DependencyInfo,
+  type LockfileInfo,
+  type PackageJsonInfo,
+  type SupplyChainInfo,
+} from "./supply-chain.js";
 
 // Artifact schemas and types
 export {
@@ -67,6 +85,12 @@ export {
   RouteMapSchema,
   CoverageMetricsSchema,
   MetricsSchema,
+  CIMetadataSchema,
+  // Phase 4 schemas
+  CorrelationSummarySchema,
+  GraphNodeSchema,
+  GraphEdgeSchema,
+  ProofTraceGraphSchema,
   ScanArtifactSchema,
   computeSummary,
   type ToolInfo,
@@ -84,5 +108,11 @@ export {
   type RouteMap,
   type CoverageMetrics,
   type Metrics,
+  type CIMetadata,
+  // Phase 4 types
+  type CorrelationSummary,
+  type GraphNode,
+  type GraphEdge,
+  type ProofTraceGraph,
   type ScanArtifact,
 } from "./artifact.js";

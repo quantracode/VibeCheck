@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, X, FileSearch, Upload } from "lucide-react";
+import { Search, Filter, X, FileSearch, Upload, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import {
   useArtifactStore,
@@ -11,6 +11,8 @@ import {
   type CategoryFilter,
   type FindingsFilter,
 } from "@/lib/store";
+import { usePolicyStore } from "@/lib/policy-store";
+import { applyWaivers } from "@vibecheck/policy";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -38,6 +40,7 @@ const severityOptions: { value: SeverityFilter; label: string }[] = [
 const categoryOptions: { value: CategoryFilter; label: string }[] = [
   { value: "all", label: "All Categories" },
   { value: "auth", label: "Auth" },
+  { value: "authorization", label: "Authorization" },
   { value: "validation", label: "Validation" },
   { value: "middleware", label: "Middleware" },
   { value: "secrets", label: "Secrets" },
@@ -54,13 +57,20 @@ const categoryOptions: { value: CategoryFilter; label: string }[] = [
 
 export default function FindingsPage() {
   const { artifacts, selectedArtifactId } = useArtifactStore();
+  const { waivers } = usePolicyStore();
   const selectedArtifact = useMemo(
     () => artifacts.find((a) => a.id === selectedArtifactId),
     [artifacts, selectedArtifactId]
   );
-  const findings = useMemo(
+  const allFindings = useMemo(
     () => selectedArtifact?.artifact.findings ?? [],
     [selectedArtifact]
+  );
+
+  // Apply waivers to separate active vs waived findings
+  const { activeFindings, waivedFindings } = useMemo(
+    () => applyWaivers(allFindings, waivers),
+    [allFindings, waivers]
   );
 
   const [filter, setFilter] = useState<FindingsFilter>({
@@ -69,9 +79,21 @@ export default function FindingsPage() {
     search: "",
   });
 
+  // Toggle to show/hide waived findings
+  const [showWaived, setShowWaived] = useState(false);
+
+  // Use active findings by default, or all findings if showWaived is true
+  const findings = showWaived ? allFindings : activeFindings;
+
   const filteredFindings = useMemo(
     () => filterAndSortFindings(findings, filter),
     [findings, filter]
+  );
+
+  // Create a set of waived fingerprints for quick lookup
+  const waivedFingerprints = useMemo(
+    () => new Set(waivedFindings.map((wf) => wf.finding.fingerprint)),
+    [waivedFindings]
   );
 
   const hasActiveFilters =
@@ -126,14 +148,40 @@ export default function FindingsPage() {
                 {" "}
                 of{" "}
                 <span className="font-semibold text-foreground tabular-nums">
-                  {findings.length}
+                  {showWaived ? allFindings.length : activeFindings.length}
                 </span>
               </span>
             )}{" "}
-            finding{filteredFindings.length !== 1 ? "s" : ""}
+            {showWaived ? "total" : "active"} finding{filteredFindings.length !== 1 ? "s" : ""}
             {hasActiveFilters && " matching filters"}
+            {waivedFindings.length > 0 && !showWaived && (
+              <span className="text-emerald-500">
+                {" "}
+                ({waivedFindings.length} waived)
+              </span>
+            )}
           </p>
         </div>
+        {waivedFindings.length > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowWaived(!showWaived)}
+            className="gap-2"
+          >
+            {showWaived ? (
+              <>
+                <EyeOff className="w-4 h-4" />
+                Hide waived
+              </>
+            ) : (
+              <>
+                <Eye className="w-4 h-4" />
+                Show waived ({waivedFindings.length})
+              </>
+            )}
+          </Button>
+        )}
       </div>
 
       {/* Policy Gate */}
@@ -240,7 +288,10 @@ export default function FindingsPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2, delay: 0.1 }}
         >
-          <FindingsTable findings={filteredFindings} />
+          <FindingsTable
+            findings={filteredFindings}
+            waivedFingerprints={showWaived ? waivedFingerprints : undefined}
+          />
         </motion.div>
       )}
     </div>

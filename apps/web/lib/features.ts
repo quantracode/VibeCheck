@@ -16,6 +16,7 @@ export type FeatureId =
   | "abuse_classification"
   | "architecture_maps"
   | "signed_export"
+  | "waivers"
   | "sso"
   | "audit_logs"
   | "custom_rules";
@@ -64,10 +65,16 @@ export const FEATURES: Record<FeatureId, FeatureDefinition> = {
   signed_export: {
     id: "signed_export",
     name: "Signed Report Export",
-    description: "Export cryptographically signed security reports",
+    description: "Export cryptographically signed PDF/HTML reports with integrity hash",
     minPlan: "pro",
     category: "export",
-    comingSoon: true,
+  },
+  waivers: {
+    id: "waivers",
+    name: "Waiver Management",
+    description: "Suppress specific findings with documented waivers and reasons",
+    minPlan: "pro",
+    category: "policy",
   },
   sso: {
     id: "sso",

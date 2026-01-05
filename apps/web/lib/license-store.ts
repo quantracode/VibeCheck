@@ -61,7 +61,7 @@ export const useLicenseStore = create<LicenseState>((set, get) => ({
     return get().license !== null;
   },
 
-  // Initialize from stored license
+  // Initialize from stored license (fully offline - no network calls)
   initialize: async () => {
     if (get().initialized) return;
 
@@ -102,7 +102,7 @@ export const useLicenseStore = create<LicenseState>((set, get) => ({
     }
   },
 
-  // Activate a new license
+  // Activate a new license (offline validation only)
   activateLicense: async (licenseKey: string) => {
     set({ isValidating: true, error: null });
 
@@ -194,7 +194,6 @@ export function useLicenseInfo(): {
 } {
   const license = useLicenseStore((state) => state.license);
 
-  // Compute plan and isLicensed from the license state directly
   const plan: PlanType = license?.payload.plan ?? "free";
   const isLicensed = license !== null;
 

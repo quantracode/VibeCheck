@@ -1,0 +1,109 @@
+{
+  "version": "0.1",
+  "waivers": [
+    {
+      "id": "license-scripts-output",
+      "match": {
+        "ruleId": "VC-PRIV-001",
+        "pathPattern": "scripts/license/**"
+      },
+      "reason": "License generation scripts intentionally output keys to console for user to copy",
+      "createdBy": "vibecheck-maintainers",
+      "createdAt": "2026-01-04T00:00:00.000Z"
+    },
+    {
+      "id": "license-cli-output",
+      "match": {
+        "ruleId": "VC-PRIV-001",
+        "pathPattern": "packages/cli/src/commands/license.ts"
+      },
+      "reason": "License CLI command intentionally outputs generated keys to console",
+      "createdBy": "vibecheck-maintainers",
+      "createdAt": "2026-01-04T00:00:00.000Z"
+    },
+    {
+      "id": "auth-coverage-stats",
+      "match": {
+        "fingerprint": "80edd24379def0e4"
+      },
+      "reason": "authCoverage is scan statistics, not sensitive authentication data",
+      "createdBy": "vibecheck-maintainers",
+      "createdAt": "2026-01-04T00:00:00.000Z"
+    },
+    {
+      "id": "auth-coverage-stats-scan",
+      "match": {
+        "fingerprint": "5acd2cdff2e9d0ac"
+      },
+      "reason": "authCoverage is scan statistics, not sensitive authentication data",
+      "createdBy": "vibecheck-maintainers",
+      "createdAt": "2026-01-04T00:00:00.000Z"
+    },
+    {
+      "id": "scanner-env-patterns",
+      "match": {
+        "ruleId": "VC-CONFIG-001",
+        "pathPattern": "packages/cli/src/scanners/**"
+      },
+      "reason": "Scanner code contains example env var patterns for detection, not actual usage",
+      "createdBy": "vibecheck-maintainers",
+      "createdAt": "2026-01-04T00:00:00.000Z"
+    },
+    {
+      "id": "demo-artifact-examples",
+      "match": {
+        "ruleId": "VC-CONFIG-001",
+        "pathPattern": "packages/cli/src/commands/demo-artifact.ts"
+      },
+      "reason": "Demo artifact generator creates example findings with fake env vars",
+      "createdBy": "vibecheck-maintainers",
+      "createdAt": "2026-01-04T00:00:00.000Z"
+    },
+    {
+      "id": "public-key-constants",
+      "match": {
+        "fingerprint": "b72c6df23e410967"
+      },
+      "reason": "VIBECHECK_PUBLIC_KEY_B64 is a public key - meant to be public for signature verification",
+      "createdBy": "vibecheck-maintainers",
+      "createdAt": "2026-01-04T00:00:00.000Z"
+    },
+    {
+      "id": "demo-public-key",
+      "match": {
+        "fingerprint": "a7c144ea8720952c"
+      },
+      "reason": "DEMO_PUBLIC_KEY_B64 is a public key for demo license verification - intentionally public",
+      "createdBy": "vibecheck-maintainers",
+      "createdAt": "2026-01-04T00:00:00.000Z"
+    },
+    {
+      "id": "license-storage-key",
+      "match": {
+        "fingerprint": "ffbfc4ee38d1fb52"
+      },
+      "reason": "LICENSE_STORAGE_KEY is a localStorage key name, not a secret credential",
+      "createdBy": "vibecheck-maintainers",
+      "createdAt": "2026-01-04T00:00:00.000Z"
+    },
+    {
+      "id": "rule-id-constant",
+      "match": {
+        "fingerprint": "73233a1d4b709c29"
+      },
+      "reason": "RULE_AUTH_INFO_001 is a rule identifier constant, not a security credential",
+      "createdBy": "vibecheck-maintainers",
+      "createdAt": "2026-01-04T00:00:00.000Z"
+    },
+    {
+      "id": "scanner-math-random",
+      "match": {
+        "ruleId": "VC-CRYPTO-001",
+        "pathPattern": "packages/cli/src/scanners/**"
+      },
+      "reason": "Scanner code detects Math.random usage - the scanner itself doesn't use it for security",
+      "createdBy": "vibecheck-maintainers",
+      "createdAt": "2026-01-04T00:00:00.000Z"
+    }
+  ]
+}

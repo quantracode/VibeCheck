@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -256,14 +256,67 @@ function LinksSection({ links }: { links: NonNullable<Finding["links"]> }) {
 export default function FindingDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { artifacts, selectedArtifactId } = useArtifactStore();
+  const { artifacts, selectedArtifactId, isLoading } = useArtifactStore();
 
-  const findingId = decodeURIComponent(params.id as string);
+  // Get the finding ID from URL pathname directly to handle static export hydration
+  // The pre-rendered placeholder page has id="placeholder" but we need the real ID from URL
+  const [findingId, setFindingId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const pathParts = window.location.pathname.split("/");
+      const urlId = pathParts[pathParts.length - 1];
+      if (urlId && urlId !== "placeholder") {
+        return decodeURIComponent(urlId);
+      }
+    }
+    return decodeURIComponent(params.id as string);
+  });
+
+  // Update finding ID on client when URL changes
+  useEffect(() => {
+    const pathParts = window.location.pathname.split("/");
+    const urlId = pathParts[pathParts.length - 1];
+    if (urlId && urlId !== "placeholder") {
+      setFindingId(decodeURIComponent(urlId));
+    }
+  }, [params.id]);
 
   const finding = useMemo(() => {
+    // First try the selected artifact
     const selectedArtifact = artifacts.find((a) => a.id === selectedArtifactId);
-    return selectedArtifact?.artifact.findings.find((f: Finding) => f.id === findingId);
+    const fromSelected = selectedArtifact?.artifact.findings.find((f: Finding) => f.id === findingId);
+    if (fromSelected) return fromSelected;
+
+    // If not found in selected, search all artifacts
+    for (const artifact of artifacts) {
+      const found = artifact.artifact.findings.find((f: Finding) => f.id === findingId);
+      if (found) return found;
+    }
+    return undefined;
   }, [artifacts, selectedArtifactId, findingId]);
+
+  // Show loading state while store is initializing
+  // isLoading starts false, so also check if we have no artifacts yet
+  const storeNotReady = isLoading || artifacts.length === 0;
+
+  if (storeNotReady && !finding) {
+    return (
+      <div className="space-y-6">
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </Button>
+        <Card>
+          <CardContent className="py-16 text-center">
+            <p className="text-muted-foreground">Loading...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (!finding) {
     return (

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Shield, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FeatureGate, useFeatureGate } from "@/components/license";
 
 interface AddWaiverFormProps {
   onAdd: (waiver: Waiver) => void;
@@ -175,89 +176,94 @@ export function WaiverManager({
   const [isAddOpen, setIsAddOpen] = useState(false);
 
   return (
-    <Card className={cn(className)}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-medium flex items-center gap-2">
-            <Shield className="w-5 h-5" />
-            Waivers
-          </CardTitle>
-          <div className="flex gap-2">
-            {waivers.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearWaivers}>
-                Clear All
-              </Button>
-            )}
-            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add
+    <FeatureGate feature="waivers" showPreview className={cn(className)}>
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-medium flex items-center gap-2">
+              <Shield className="w-5 h-5" />
+              Waivers
+              <span className="px-1.5 py-0.5 text-[10px] font-medium bg-amber-500/10 text-amber-500 rounded border border-amber-500/20">
+                Pro
+              </span>
+            </CardTitle>
+            <div className="flex gap-2">
+              {waivers.length > 0 && (
+                <Button variant="ghost" size="sm" onClick={clearWaivers}>
+                  Clear All
                 </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Waiver</DialogTitle>
-                </DialogHeader>
-                <AddWaiverForm
-                  onAdd={addWaiver}
-                  onClose={() => setIsAddOpen(false)}
-                  prefilledFingerprint={prefilledFingerprint}
-                  prefilledRuleId={prefilledRuleId}
-                />
-              </DialogContent>
-            </Dialog>
+              )}
+              <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Waiver</DialogTitle>
+                  </DialogHeader>
+                  <AddWaiverForm
+                    onAdd={addWaiver}
+                    onClose={() => setIsAddOpen(false)}
+                    prefilledFingerprint={prefilledFingerprint}
+                    prefilledRuleId={prefilledRuleId}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {waivers.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            No waivers configured. Add a waiver to suppress specific findings.
-          </p>
-        ) : (
-          <ul className="space-y-2">
-            {waivers.map((waiver) => (
-              <li
-                key={waiver.id}
-                className="flex items-start justify-between gap-2 p-2 rounded-md bg-muted/50"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 text-sm">
-                    {waiver.match.fingerprint ? (
-                      <span className="font-mono text-xs truncate">
-                        {waiver.match.fingerprint.slice(0, 20)}...
-                      </span>
-                    ) : (
-                      <span className="font-mono text-xs">
-                        {waiver.match.ruleId}
-                        {waiver.match.pathPattern && (
-                          <span className="text-muted-foreground">
-                            {" "}
-                            @ {waiver.match.pathPattern}
-                          </span>
-                        )}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                    {waiver.reason}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeWaiver(waiver.id)}
-                  className="shrink-0"
+        </CardHeader>
+        <CardContent>
+          {waivers.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No waivers configured. Add a waiver to suppress specific findings.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {waivers.map((waiver) => (
+                <li
+                  key={waiver.id}
+                  className="flex items-start justify-between gap-2 p-2 rounded-md bg-muted/50"
                 >
-                  <X className="w-4 h-4" />
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 text-sm">
+                      {waiver.match.fingerprint ? (
+                        <span className="font-mono text-xs truncate">
+                          {waiver.match.fingerprint.slice(0, 20)}...
+                        </span>
+                      ) : (
+                        <span className="font-mono text-xs">
+                          {waiver.match.ruleId}
+                          {waiver.match.pathPattern && (
+                            <span className="text-muted-foreground">
+                              {" "}
+                              @ {waiver.match.pathPattern}
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {waiver.reason}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeWaiver(waiver.id)}
+                    className="shrink-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+    </FeatureGate>
   );
 }
 
@@ -270,6 +276,7 @@ interface QuickWaiveButtonProps {
 export function QuickWaiveButton({ fingerprint, ruleId }: QuickWaiveButtonProps) {
   const { waivers, addWaiver } = usePolicyStore();
   const [isOpen, setIsOpen] = useState(false);
+  const { hasAccess } = useFeatureGate("waivers");
 
   // Check if already waived
   const isWaived = waivers.some(
@@ -283,6 +290,11 @@ export function QuickWaiveButton({ fingerprint, ruleId }: QuickWaiveButtonProps)
         Waived
       </span>
     );
+  }
+
+  // Don't show waive button if user doesn't have access
+  if (!hasAccess) {
+    return null;
   }
 
   return (

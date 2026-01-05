@@ -2,10 +2,11 @@ import { z } from "zod";
 import { FindingSchema } from "./finding.js";
 import { ClaimTypeSchema, ClaimSourceSchema, ClaimScopeSchema, ClaimStrengthSchema } from "./claim.js";
 import { ProofTraceSchema } from "./proof-trace.js";
+import { SupplyChainInfoSchema } from "./supply-chain.js";
 
-// Support both 0.1 and 0.2 artifact versions
-export const ARTIFACT_VERSION = "0.2" as const;
-export const SUPPORTED_VERSIONS = ["0.1", "0.2"] as const;
+// Support 0.1, 0.2, and 0.3 artifact versions
+export const ARTIFACT_VERSION = "0.3" as const;
+export const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"] as const;
 
 export const ArtifactVersionSchema = z.enum(SUPPORTED_VERSIONS);
 
@@ -48,6 +49,11 @@ export const CategoryCountsSchema = z.object({
   uploads: z.number().int().nonnegative(),
   hallucinations: z.number().int().nonnegative(),
   abuse: z.number().int().nonnegative(),
+  // Phase 4 categories
+  correlation: z.number().int().nonnegative(),
+  authorization: z.number().int().nonnegative(),
+  lifecycle: z.number().int().nonnegative(),
+  "supply-chain": z.number().int().nonnegative(),
   other: z.number().int().nonnegative(),
 });
 
@@ -145,6 +151,54 @@ export const MetricsSchema = z.object({
   rulesExecuted: z.number().int().nonnegative(),
 }).merge(CoverageMetricsSchema);
 
+// Phase 4: CI Badge Metadata
+export const CIMetadataSchema = z.object({
+  /** Security score (0-100) */
+  securityScore: z.number().int().min(0).max(100),
+  /** Overall status for CI badge */
+  status: z.enum(["pass", "warn", "fail"]),
+  /** Badge generation timestamp */
+  badgeGeneratedAt: z.string().datetime().optional(),
+  /** SHA-256 hash for determinism certification */
+  artifactHash: z.string().optional(),
+  /** Whether artifact passed determinism certification */
+  deterministicCertified: z.boolean().optional(),
+});
+
+// Phase 4: Correlation Summary
+export const CorrelationSummarySchema = z.object({
+  /** Total number of correlation findings generated */
+  totalCorrelations: z.number().int().nonnegative(),
+  /** Count by correlation pattern */
+  byPattern: z.record(z.string(), z.number().int().nonnegative()),
+  /** Correlation pass duration in ms */
+  correlationDurationMs: z.number().nonnegative().optional(),
+});
+
+// Phase 4: Graph Node for proof trace visualization
+export const GraphNodeSchema = z.object({
+  id: z.string(),
+  type: z.enum(["route", "middleware", "finding", "intent", "function"]),
+  label: z.string(),
+  file: z.string().optional(),
+  line: z.number().int().positive().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+// Phase 4: Graph Edge for proof trace visualization
+export const GraphEdgeSchema = z.object({
+  source: z.string(),
+  target: z.string(),
+  type: z.enum(["calls", "protects", "validates", "correlates", "references"]),
+  label: z.string().optional(),
+});
+
+// Phase 4: Proof Trace Graph for visualization
+export const ProofTraceGraphSchema = z.object({
+  nodes: z.array(GraphNodeSchema),
+  edges: z.array(GraphEdgeSchema),
+});
+
 export const ScanArtifactSchema = z.object({
   artifactVersion: ArtifactVersionSchema,
   generatedAt: z.string().datetime(),
@@ -164,6 +218,14 @@ export const ScanArtifactSchema = z.object({
   intentMap: IntentMapSchema.optional(),
   proofTraces: z.record(z.string(), ProofTraceSchema).optional(),
   metrics: MetricsSchema.optional(),
+  // Phase 4: Supply chain analysis
+  supplyChainInfo: SupplyChainInfoSchema.optional(),
+  // Phase 4: CI badge metadata
+  ciMetadata: CIMetadataSchema.optional(),
+  // Phase 4: Correlation summary
+  correlationSummary: CorrelationSummarySchema.optional(),
+  // Phase 4: Proof trace graph for visualization
+  graph: ProofTraceGraphSchema.optional(),
 });
 
 export type ToolInfo = z.infer<typeof ToolInfoSchema>;
@@ -181,6 +243,11 @@ export type IntentMap = z.infer<typeof IntentMapSchema>;
 export type RouteMap = z.infer<typeof RouteMapSchema>;
 export type CoverageMetrics = z.infer<typeof CoverageMetricsSchema>;
 export type Metrics = z.infer<typeof MetricsSchema>;
+export type CIMetadata = z.infer<typeof CIMetadataSchema>;
+export type CorrelationSummary = z.infer<typeof CorrelationSummarySchema>;
+export type GraphNode = z.infer<typeof GraphNodeSchema>;
+export type GraphEdge = z.infer<typeof GraphEdgeSchema>;
+export type ProofTraceGraph = z.infer<typeof ProofTraceGraphSchema>;
 export type ScanArtifact = z.infer<typeof ScanArtifactSchema>;
 
 /**
@@ -208,6 +275,11 @@ export function computeSummary(findings: z.infer<typeof FindingSchema>[]): z.inf
     uploads: 0,
     hallucinations: 0,
     abuse: 0,
+    // Phase 4 categories
+    correlation: 0,
+    authorization: 0,
+    lifecycle: 0,
+    "supply-chain": 0,
     other: 0,
   };
 

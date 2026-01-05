@@ -22,23 +22,36 @@ import {
   Info,
 } from "lucide-react";
 import { useArtifactStore } from "@/lib/store";
+import { usePolicyStore } from "@/lib/policy-store";
+import { applyWaivers } from "@vibecheck/policy";
 import { validateArtifact } from "@vibecheck/schema";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AbuseRiskCard } from "@/components/AbuseRiskCard";
+import { SupplyChainCard } from "@/components/SupplyChainCard";
 
 export default function DashboardPage() {
   const { artifacts, selectedArtifactId, importArtifact } = useArtifactStore();
+  const { waivers } = usePolicyStore();
   const selectedArtifact = useMemo(
     () => artifacts.find((a) => a.id === selectedArtifactId),
     [artifacts, selectedArtifactId]
   );
 
-  const findings = useMemo(
+  const allFindings = useMemo(
     () => selectedArtifact?.artifact.findings ?? [],
     [selectedArtifact]
   );
+
+  // Apply waivers to get active findings only
+  const { activeFindings, waivedFindings } = useMemo(
+    () => applyWaivers(allFindings, waivers),
+    [allFindings, waivers]
+  );
+
+  // Use active findings for counts and score
+  const findings = activeFindings;
 
   const severityCounts = useMemo(() => {
     const counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
@@ -223,7 +236,10 @@ export default function DashboardPage() {
                   <div>
                     <h2 className="text-xl font-semibold">{selectedArtifact.artifact.repo?.name ?? "Scan Results"}</h2>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(selectedArtifact.artifact.generatedAt).toLocaleDateString()} • {findings.length} findings
+                      {new Date(selectedArtifact.artifact.generatedAt).toLocaleDateString()} • {findings.length} active finding{findings.length !== 1 ? "s" : ""}
+                      {waivedFindings.length > 0 && (
+                        <span className="text-emerald-500"> ({waivedFindings.length} waived)</span>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -266,6 +282,9 @@ export default function DashboardPage() {
 
           {/* Abuse Risk Card */}
           <AbuseRiskCard findings={findings} />
+
+          {/* Supply Chain Card */}
+          <SupplyChainCard findings={findings} />
 
           {/* Coverage Cards */}
           {selectedArtifact.artifact.metrics && (

@@ -23,6 +23,7 @@ interface ArtifactStore {
 
   // Actions
   loadArtifacts: () => Promise<void>;
+  loadFromCLI: () => Promise<boolean>;
   importArtifact: (artifact: ScanArtifact, name?: string) => Promise<string>;
   removeArtifact: (id: string) => Promise<void>;
   selectArtifact: (id: string | null) => void;
@@ -64,6 +65,30 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
         error: err instanceof Error ? err.message : "Failed to load artifacts",
         isLoading: false,
       });
+    }
+  },
+
+  loadFromCLI: async () => {
+    // Try to fetch artifact from CLI server endpoint
+    try {
+      const response = await fetch("/__vibecheck__/artifact.json");
+      if (!response.ok) {
+        return false;
+      }
+      const artifact = await response.json() as ScanArtifact;
+      // Validate it looks like a scan artifact
+      if (!artifact.findings || !artifact.summary) {
+        return false;
+      }
+      // Import it with a name based on the repo
+      const name = artifact.repo?.name
+        ? `CLI: ${artifact.repo.name}`
+        : "CLI Scan";
+      await get().importArtifact(artifact, name);
+      return true;
+    } catch {
+      // Endpoint not available or error - that's fine, we're not in CLI mode
+      return false;
     }
   },
 
@@ -121,7 +146,7 @@ export const useArtifactStore = create<ArtifactStore>((set, get) => ({
 
 // Filter and sort types
 export type SeverityFilter = "all" | "critical" | "high" | "medium" | "low" | "info";
-export type CategoryFilter = "all" | "auth" | "validation" | "middleware" | "secrets" | "injection" | "privacy" | "config" | "network" | "crypto" | "uploads" | "hallucinations" | "abuse" | "other";
+export type CategoryFilter = "all" | "auth" | "authorization" | "validation" | "middleware" | "secrets" | "injection" | "privacy" | "config" | "network" | "crypto" | "uploads" | "hallucinations" | "abuse" | "other";
 
 export interface FindingsFilter {
   severity: SeverityFilter;

@@ -1,0 +1,109 @@
+{
+  "artifactVersion": "0.4",
+  "generatedAt": "2026-01-04T12:00:00.000Z",
+  "tool": {
+    "name": "vibecheck",
+    "version": "0.2.3"
+  },
+  "repo": {
+    "name": "my-nextjs-app",
+    "rootPathHash": "example123456789"
+  },
+  "summary": {
+    "totalFindings": 0,
+    "bySeverity": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "info": 0
+    },
+    "byCategory": {
+      "auth": 0,
+      "validation": 0,
+      "middleware": 0,
+      "secrets": 0,
+      "injection": 0,
+      "privacy": 0,
+      "config": 0,
+      "network": 0,
+      "crypto": 0,
+      "uploads": 0,
+      "hallucinations": 0,
+      "authorization": 0,
+      "lifecycle": 0,
+      "supply-chain": 0,
+      "correlation": 0,
+      "other": 0
+    },
+    "securityScore": 100
+  },
+  "findings": [],
+  "metrics": {
+    "filesScanned": 42,
+    "linesOfCode": 12500,
+    "scanDurationMs": 1850,
+    "rulesExecuted": 39
+  },
+  "routeMap": {
+    "routes": [
+      {
+        "routeId": "GET /api/health",
+        "path": "/api/health",
+        "method": "GET",
+        "file": "app/api/health/route.ts",
+        "startLine": 1,
+        "endLine": 5,
+        "isProtected": true,
+        "hasValidation": false,
+        "hasRateLimit": true
+      },
+      {
+        "routeId": "GET /api/users",
+        "path": "/api/users",
+        "method": "GET",
+        "file": "app/api/users/route.ts",
+        "startLine": 1,
+        "endLine": 25,
+        "isProtected": true,
+        "hasValidation": false,
+        "hasRateLimit": true
+      },
+      {
+        "routeId": "POST /api/users",
+        "path": "/api/users",
+        "method": "POST",
+        "file": "app/api/users/route.ts",
+        "startLine": 27,
+        "endLine": 55,
+        "isProtected": true,
+        "hasValidation": true,
+        "hasRateLimit": true
+      }
+    ],
+    "totalRoutes": 3,
+    "protectedRoutes": 3,
+    "unprotectedRoutes": 0
+  },
+  "middlewareMap": {
+    "hasMiddleware": true,
+    "middlewareFile": "middleware.ts",
+    "coverage": [
+      {
+        "routeId": "GET /api/health",
+        "covered": true,
+        "matcher": "/((?!_next/static|favicon.ico).*)"
+      },
+      {
+        "routeId": "GET /api/users",
+        "covered": true,
+        "matcher": "/((?!_next/static|favicon.ico).*)"
+      },
+      {
+        "routeId": "POST /api/users",
+        "covered": true,
+        "matcher": "/((?!_next/static|favicon.ico).*)"
+      }
+    ]
+  }
+}

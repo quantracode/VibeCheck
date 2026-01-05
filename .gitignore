@@ -1,7 +1,17 @@
 node_modules
 dist
 .next
+out
 *.tsbuildinfo
 .DS_Store
 *.local
 *.log
+
+# License keys - NEVER commit private keys
+.keys/
+*-private-*.key
+*.private.key
+vibecheck-private-*.key
+
+# Local artifacts
+vibecheck-artifacts/

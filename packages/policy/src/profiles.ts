@@ -20,6 +20,9 @@ const STARTUP_REGRESSION: RegressionPolicy = {
   failOnSeverityRegression: false,
   failOnNetIncrease: false,
   warnOnNewFindings: true,
+  failOnProtectionRemoved: false,
+  warnOnProtectionRemoved: true,
+  failOnSemanticRegression: false,
 };
 
 const STARTUP_PROFILE: PolicyConfig = {
@@ -49,6 +52,9 @@ const STRICT_REGRESSION: RegressionPolicy = {
   failOnSeverityRegression: true,
   failOnNetIncrease: false,
   warnOnNewFindings: true,
+  failOnProtectionRemoved: true,
+  warnOnProtectionRemoved: true,
+  failOnSemanticRegression: false,
 };
 
 const STRICT_PROFILE: PolicyConfig = {
@@ -78,6 +84,9 @@ const COMPLIANCE_LITE_REGRESSION: RegressionPolicy = {
   failOnSeverityRegression: true,
   failOnNetIncrease: true,
   warnOnNewFindings: true,
+  failOnProtectionRemoved: true,
+  warnOnProtectionRemoved: true,
+  failOnSemanticRegression: true,
 };
 
 const COMPLIANCE_LITE_PROFILE: PolicyConfig = {

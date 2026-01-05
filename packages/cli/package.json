@@ -1,7 +1,7 @@
 {
-  "name": "@vibecheck/cli",
-  "version": "0.0.1",
-  "private": true,
+  "name": "@quantracode/vibecheck",
+  "version": "0.2.3",
+  "description": "Security scanner for modern web applications",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,24 +14,64 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "security",
+    "scanner",
+    "static-analysis",
+    "nextjs",
+    "express",
+    "typescript",
+    "sarif"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quantracode/VibeCheck.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/quantracode/VibeCheck#readme",
+  "bugs": {
+    "url": "https://github.com/quantracode/VibeCheck/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsup",
+    "build:tsc": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "dev": "tsc -p tsconfig.build.json --watch",
+    "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "vibecheck": "node ./dist/index.js"
+    "vibecheck": "node ./dist/index.js",
+    "smoke": "node scripts/smoke-test.mjs",
+    "pack:check": "node scripts/pack-check.mjs",
+    "prepublishOnly": "pnpm run build && pnpm run pack:check"
   },
   "dependencies": {
-    "@vibecheck/policy": "workspace:*",
-    "@vibecheck/schema": "workspace:*",
+    "chalk": "^5.4.1",
     "commander": "^12.1.0",
     "fast-glob": "^3.3.2",
-    "ts-morph": "^24.0.0"
+    "micromatch": "^4.0.8",
+    "tar": "^7.5.2",
+    "ts-morph": "^24.0.0",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
-    "vitest": "^2.1.8",
-    "@types/node": "^22.10.2"
+    "@vibecheck/license": "workspace:*",
+    "@types/micromatch": "^4.0.9",
+    "@types/node": "^22.10.2",
+    "@types/tar": "^6.1.13",
+    "@vibecheck/policy": "workspace:*",
+    "@vibecheck/schema": "workspace:*",
+    "tsup": "^8.5.1",
+    "vitest": "^2.1.8"
   }
 }

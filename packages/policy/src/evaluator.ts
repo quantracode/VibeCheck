@@ -23,6 +23,8 @@ import {
   getNewHighCriticalIds,
   hasSeverityRegressions,
   hasNetIncrease,
+  hasProtectionRegressions,
+  hasSemanticRegressions,
 } from "./regression.js";
 import type { Waiver } from "./schemas/waiver.js";
 
@@ -142,6 +144,12 @@ function computeSummaryCounts(
     crypto: 0,
     uploads: 0,
     hallucinations: 0,
+    abuse: 0,
+    // Phase 4 categories
+    correlation: 0,
+    authorization: 0,
+    lifecycle: 0,
+    "supply-chain": 0,
     other: 0,
   };
 
@@ -339,6 +347,57 @@ function evaluateRegression(
       code: "severity_threshold",
       message: `${regression.newFindings.length} new finding(s) detected`,
       findingIds: regression.newFindings.map((f) => f.findingId),
+    });
+  }
+
+  // Check for protection regressions (new semantic feature)
+  if (hasProtectionRegressions(regression)) {
+    const protectionRegs = regression.protectionRegressions || [];
+
+    if (policy.failOnProtectionRemoved) {
+      status = "fail";
+      reasons.push({
+        status: "fail",
+        code: "protection_removed",
+        message: `${protectionRegs.length} route(s) lost protection coverage`,
+        details: {
+          regressions: protectionRegs.map((r) => ({
+            route: r.routeId,
+            protectionType: r.protectionType,
+          })),
+        },
+      });
+    } else if (policy.warnOnProtectionRemoved && status === "pass") {
+      status = "warn";
+      reasons.push({
+        status: "warn",
+        code: "protection_removed",
+        message: `${protectionRegs.length} route(s) may have lost protection`,
+        details: {
+          regressions: protectionRegs.map((r) => ({
+            route: r.routeId,
+            protectionType: r.protectionType,
+          })),
+        },
+      });
+    }
+  }
+
+  // Check for semantic regressions
+  if (policy.failOnSemanticRegression && hasSemanticRegressions(regression)) {
+    const semanticRegs = regression.semanticRegressions || [];
+    status = "fail";
+    reasons.push({
+      status: "fail",
+      code: "semantic_regression",
+      message: `${semanticRegs.length} semantic regression(s) detected`,
+      details: {
+        regressions: semanticRegs.map((r) => ({
+          type: r.type,
+          severity: r.severity,
+          description: r.description,
+        })),
+      },
     });
   }
 

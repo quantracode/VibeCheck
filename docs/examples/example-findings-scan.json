@@ -1,0 +1,224 @@
+{
+  "artifactVersion": "0.4",
+  "generatedAt": "2026-01-04T12:00:00.000Z",
+  "tool": {
+    "name": "vibecheck",
+    "version": "0.2.3"
+  },
+  "repo": {
+    "name": "vulnerable-app",
+    "rootPathHash": "example987654321"
+  },
+  "summary": {
+    "totalFindings": 5,
+    "bySeverity": {
+      "critical": 1,
+      "high": 2,
+      "medium": 2,
+      "low": 0,
+      "info": 0
+    },
+    "byCategory": {
+      "auth": 1,
+      "validation": 1,
+      "middleware": 0,
+      "secrets": 0,
+      "injection": 0,
+      "privacy": 1,
+      "config": 0,
+      "network": 1,
+      "crypto": 1,
+      "uploads": 0,
+      "hallucinations": 0,
+      "authorization": 0,
+      "lifecycle": 0,
+      "supply-chain": 0,
+      "correlation": 0,
+      "other": 0
+    },
+    "securityScore": 45
+  },
+  "findings": [
+    {
+      "id": "vc-auth-001-example1",
+      "ruleId": "VC-AUTH-001",
+      "title": "Unprotected API route: POST /api/admin/users",
+      "description": "The API route handler exports a POST method without authentication checks. An unauthenticated attacker could access this endpoint directly.",
+      "severity": "critical",
+      "confidence": 0.95,
+      "category": "auth",
+      "evidence": [
+        {
+          "file": "app/api/admin/users/route.ts",
+          "startLine": 5,
+          "endLine": 15,
+          "snippet": "export async function POST(request: Request) {\n  const body = await request.json();\n  await db.user.create({ data: body });\n  return Response.json({ success: true });\n}",
+          "label": "POST handler without auth check"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Add authentication using getServerSession() or similar. Return 401 for unauthenticated requests.",
+        "patch": "import { getServerSession } from 'next-auth';\n\nexport async function POST(request: Request) {\n  const session = await getServerSession();\n  if (!session) {\n    return Response.json({ error: 'Unauthorized' }, { status: 401 });\n  }\n  // ... rest of handler\n}"
+      },
+      "links": {
+        "owasp": "https://owasp.org/Top10/A01_2021-Broken_Access_Control/",
+        "cwe": "https://cwe.mitre.org/data/definitions/306.html"
+      },
+      "fingerprint": "a1b2c3d4e5f6g7h8"
+    },
+    {
+      "id": "vc-val-001-example2",
+      "ruleId": "VC-VAL-001",
+      "title": "Validation result ignored in POST /api/posts",
+      "description": "Zod schema validates request body but the validation result is not used to reject invalid input. Code proceeds regardless of validation outcome.",
+      "severity": "high",
+      "confidence": 0.88,
+      "category": "validation",
+      "evidence": [
+        {
+          "file": "app/api/posts/route.ts",
+          "startLine": 10,
+          "endLine": 18,
+          "snippet": "const result = PostSchema.safeParse(body);\n// result.success is never checked!\nawait db.post.create({ data: body });",
+          "label": "safeParse() result ignored"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Check validation result and return 400 Bad Request for invalid input.",
+        "patch": "const result = PostSchema.safeParse(body);\nif (!result.success) {\n  return Response.json({ error: result.error }, { status: 400 });\n}\nawait db.post.create({ data: result.data });"
+      },
+      "links": {
+        "owasp": "https://owasp.org/Top10/A03_2021-Injection/",
+        "cwe": "https://cwe.mitre.org/data/definitions/20.html"
+      },
+      "fingerprint": "b2c3d4e5f6g7h8i9"
+    },
+    {
+      "id": "vc-priv-001-example3",
+      "ruleId": "VC-PRIV-001",
+      "title": "Sensitive data in logs: password",
+      "description": "The console.log call includes sensitive data (password). This could expose credentials in log files, monitoring systems, or console output.",
+      "severity": "medium",
+      "confidence": 0.92,
+      "category": "privacy",
+      "evidence": [
+        {
+          "file": "app/api/auth/login/route.ts",
+          "startLine": 8,
+          "endLine": 8,
+          "snippet": "console.log('Login attempt:', { email, password });",
+          "label": "Sensitive data logged: password"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Remove sensitive data from log statements. Only log non-sensitive identifiers.",
+        "patch": "console.log('Login attempt:', { email, timestamp: Date.now() });"
+      },
+      "links": {
+        "owasp": "https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/",
+        "cwe": "https://cwe.mitre.org/data/definitions/532.html"
+      },
+      "fingerprint": "c3d4e5f6g7h8i9j0"
+    },
+    {
+      "id": "vc-net-001-example4",
+      "ruleId": "VC-NET-001",
+      "title": "SSRF-prone fetch in GET /api/proxy",
+      "description": "fetch() is called with a user-controlled URL without an allowlist. An attacker could make the server request internal services or external systems.",
+      "severity": "high",
+      "confidence": 0.85,
+      "category": "network",
+      "evidence": [
+        {
+          "file": "app/api/proxy/route.ts",
+          "startLine": 5,
+          "endLine": 8,
+          "snippet": "const { url } = await request.json();\nconst response = await fetch(url);",
+          "label": "fetch() with user-controlled URL"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Implement URL allowlist validation before making external requests.",
+        "patch": "const ALLOWED_HOSTS = ['api.example.com'];\nconst parsed = new URL(url);\nif (!ALLOWED_HOSTS.includes(parsed.host)) {\n  return Response.json({ error: 'URL not allowed' }, { status: 400 });\n}"
+      },
+      "links": {
+        "owasp": "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_(SSRF)/",
+        "cwe": "https://cwe.mitre.org/data/definitions/918.html"
+      },
+      "fingerprint": "d4e5f6g7h8i9j0k1"
+    },
+    {
+      "id": "vc-crypto-002-example5",
+      "ruleId": "VC-CRYPTO-002",
+      "title": "JWT decoded without verification in middleware",
+      "description": "jwt.decode() is used without signature verification. Attackers can forge JWT tokens and bypass authentication entirely.",
+      "severity": "medium",
+      "confidence": 0.90,
+      "category": "crypto",
+      "evidence": [
+        {
+          "file": "middleware.ts",
+          "startLine": 12,
+          "endLine": 14,
+          "snippet": "const token = request.cookies.get('token')?.value;\nconst payload = jwt.decode(token);",
+          "label": "jwt.decode() without verification"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Use jwt.verify() with a secret to validate token signatures.",
+        "patch": "const payload = jwt.verify(token, process.env.JWT_SECRET!);"
+      },
+      "links": {
+        "owasp": "https://owasp.org/Top10/A02_2021-Cryptographic_Failures/",
+        "cwe": "https://cwe.mitre.org/data/definitions/347.html"
+      },
+      "fingerprint": "e5f6g7h8i9j0k1l2"
+    }
+  ],
+  "metrics": {
+    "filesScanned": 38,
+    "linesOfCode": 8500,
+    "scanDurationMs": 1650,
+    "rulesExecuted": 39
+  },
+  "routeMap": {
+    "routes": [
+      {
+        "routeId": "POST /api/admin/users",
+        "path": "/api/admin/users",
+        "method": "POST",
+        "file": "app/api/admin/users/route.ts",
+        "startLine": 5,
+        "endLine": 15,
+        "isProtected": false,
+        "hasValidation": false,
+        "hasRateLimit": false
+      },
+      {
+        "routeId": "POST /api/posts",
+        "path": "/api/posts",
+        "method": "POST",
+        "file": "app/api/posts/route.ts",
+        "startLine": 1,
+        "endLine": 25,
+        "isProtected": true,
+        "hasValidation": false,
+        "hasRateLimit": false
+      },
+      {
+        "routeId": "GET /api/proxy",
+        "path": "/api/proxy",
+        "method": "GET",
+        "file": "app/api/proxy/route.ts",
+        "startLine": 1,
+        "endLine": 15,
+        "isProtected": true,
+        "hasValidation": false,
+        "hasRateLimit": false
+      }
+    ],
+    "totalRoutes": 3,
+    "protectedRoutes": 2,
+    "unprotectedRoutes": 1
+  }
+}

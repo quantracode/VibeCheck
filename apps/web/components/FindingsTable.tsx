@@ -2,23 +2,32 @@
 
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileCode, ChevronRight } from "lucide-react";
+import { FileCode, ChevronRight, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SeverityBadge } from "./SeverityBadge";
 import { ConfidenceMeter } from "./ConfidenceMeter";
 import { CostAmplificationBadge } from "./AbuseRiskBadge";
+import { WhatIfBadge, WhatIfFindingActions } from "./whatif";
+import { useWhatIfStore } from "@/lib/whatif-store";
 import type { Finding } from "@vibecheck/schema";
 
 interface FindingsTableProps {
   findings: Finding[];
   className?: string;
+  /** Set of fingerprints that are waived - used to show waiver indicator */
+  waivedFingerprints?: Set<string>;
 }
 
-export function FindingsTable({ findings, className }: FindingsTableProps) {
+export function FindingsTable({ findings, className, waivedFingerprints }: FindingsTableProps) {
+  const { isEnabled: whatIfEnabled, hasOverride } = useWhatIfStore();
+
   return (
     <div className={cn("space-y-3", className)} role="list" aria-label="Security findings">
       <AnimatePresence mode="popLayout">
-        {findings.map((finding, index) => (
+        {findings.map((finding, index) => {
+          const isWaived = waivedFingerprints?.has(finding.fingerprint);
+          const hasWhatIfOverride = whatIfEnabled && hasOverride(finding.id);
+          return (
           <motion.div
             key={finding.id}
             initial={{ opacity: 0, y: 10 }}
@@ -27,15 +36,22 @@ export function FindingsTable({ findings, className }: FindingsTableProps) {
             transition={{ duration: 0.15, delay: Math.min(index * 0.02, 0.2) }}
             role="listitem"
           >
-            <Link
-              href={`/findings/${encodeURIComponent(finding.id)}`}
+            <div
               className={cn(
-                "block group border border-border/60 rounded-xl bg-card transition-all duration-200",
-                "hover:bg-accent/30 hover:border-primary/20 hover:shadow-elevation-2 hover:-translate-y-0.5",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                "shadow-elevation-1"
+                "block border border-border/60 rounded-xl bg-card transition-all duration-200",
+                "shadow-elevation-1",
+                isWaived && "opacity-60 border-emerald-500/30 bg-emerald-500/5",
+                hasWhatIfOverride && "border-purple-500/30 bg-purple-500/5"
               )}
             >
+              <Link
+                href={`/findings/${encodeURIComponent(finding.id)}`}
+                className={cn(
+                  "block group transition-all duration-200",
+                  "hover:bg-accent/30",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                )}
+              >
               <div className="p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -52,6 +68,13 @@ export function FindingsTable({ findings, className }: FindingsTableProps) {
                           costAmplification={finding.abuseClassification.costAmplification}
                         />
                       )}
+                      {isWaived && (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-emerald-500 font-medium px-2 py-0.5 bg-emerald-500/10 rounded border border-emerald-500/20">
+                          <Shield className="w-3 h-3" />
+                          Waived
+                        </span>
+                      )}
+                      <WhatIfBadge findingId={finding.id} />
                     </div>
 
                     <h3 className="font-semibold text-foreground mb-1.5 group-hover:text-primary transition-colors duration-200">
@@ -90,8 +113,15 @@ export function FindingsTable({ findings, className }: FindingsTableProps) {
                 </div>
               </div>
             </Link>
+            {whatIfEnabled && (
+              <div className="px-5 pb-3 border-t border-border/30 mt-0">
+                <WhatIfFindingActions finding={finding} compact />
+              </div>
+            )}
+            </div>
           </motion.div>
-        ))}
+        );
+        })}
       </AnimatePresence>
     </div>
   );

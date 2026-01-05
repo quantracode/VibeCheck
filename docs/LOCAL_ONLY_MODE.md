@@ -110,7 +110,7 @@ localStorage.clear();
 VibeCheck makes **zero network requests** during normal operation.
 
 The only network activity occurs if you:
-1. Install the package (`npm install @vibecheck/cli`)
+1. Install the package (`npm install @quantracode/vibecheck`)
 2. Update the package (`npm update`)
 
 The tool itself never phones home.

@@ -6,11 +6,11 @@ VibeCheck is designed for CI/CD pipelines. This guide covers integration pattern
 
 ```bash
 # Install
-npm install -D @vibecheck/cli
+npm install -D @quantracode/vibecheck
 
 # Scan and evaluate in one flow
-npx vibecheck scan --format both --out ./scan.json --fail-on off
-npx vibecheck evaluate --artifact ./scan.json --profile startup
+npx @quantracode/vibecheck scan --format both --out ./scan.json --fail-on off
+npx @quantracode/vibecheck evaluate --artifact ./scan.json --profile startup
 ```
 
 Exit codes:
@@ -68,7 +68,7 @@ jobs:
         run: npm ci
 
       - name: Run VibeCheck
-        run: npx @vibecheck/cli scan --policy startup
+        run: npx @quantracode/vibecheck scan --policy startup
 ```
 
 ### With Artifact Upload
@@ -89,7 +89,7 @@ jobs:
         run: npm ci
 
       - name: Run VibeCheck
-        run: npx @vibecheck/cli scan --policy startup -o vibecheck-scan.json
+        run: npx @quantracode/vibecheck scan --policy startup -o vibecheck-scan.json
         continue-on-error: true
         id: scan
 
@@ -127,7 +127,7 @@ jobs:
       - name: Run VibeCheck
         id: scan
         run: |
-          npx @vibecheck/cli scan --policy startup -o scan.json 2>&1 | tee output.txt
+          npx @quantracode/vibecheck scan --policy startup -o scan.json 2>&1 | tee output.txt
           echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
         continue-on-error: true
 
@@ -197,9 +197,9 @@ jobs:
       - name: Run VibeCheck with baseline
         run: |
           if [ -f .vibecheck/baseline.json ]; then
-            npx @vibecheck/cli scan --policy startup --baseline .vibecheck/baseline.json
+            npx @quantracode/vibecheck scan --policy startup --baseline .vibecheck/baseline.json
           else
-            npx @vibecheck/cli scan --policy startup
+            npx @quantracode/vibecheck scan --policy startup
           fi
 
       # Save baseline on main branch
@@ -207,7 +207,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           mkdir -p .vibecheck
-          npx @vibecheck/cli scan -o .vibecheck/baseline.json
+          npx @quantracode/vibecheck scan -o .vibecheck/baseline.json
 
       - name: Upload baseline
         if: github.ref == 'refs/heads/main'
@@ -226,7 +226,7 @@ vibecheck:
   image: node:20
   script:
     - npm ci
-    - npx @vibecheck/cli scan --policy startup -o vibecheck-scan.json
+    - npx @quantracode/vibecheck scan --policy startup -o vibecheck-scan.json
   artifacts:
     paths:
       - vibecheck-scan.json
@@ -245,7 +245,7 @@ vibecheck:
   image: node:20
   script:
     - npm ci
-    - npx @vibecheck/cli scan --policy .vibecheck/policy.json
+    - npx @quantracode/vibecheck scan --policy .vibecheck/policy.json
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
@@ -273,7 +273,7 @@ steps:
   - script: npm ci
     displayName: 'Install dependencies'
 
-  - script: npx @vibecheck/cli scan --policy startup -o $(Build.ArtifactStagingDirectory)/vibecheck-scan.json
+  - script: npx @quantracode/vibecheck scan --policy startup -o $(Build.ArtifactStagingDirectory)/vibecheck-scan.json
     displayName: 'Run VibeCheck'
 
   - task: PublishBuildArtifacts@1
@@ -305,7 +305,7 @@ jobs:
           key: v1-deps-{{ checksum "package-lock.json" }}
       - run:
           name: Run VibeCheck
-          command: npx @vibecheck/cli scan --policy startup -o vibecheck-scan.json
+          command: npx @quantracode/vibecheck scan --policy startup -o vibecheck-scan.json
       - store_artifacts:
           path: vibecheck-scan.json
 
@@ -335,7 +335,7 @@ pipeline {
 
         stage('Security Scan') {
             steps {
-                sh 'npx @vibecheck/cli scan --policy startup -o vibecheck-scan.json'
+                sh 'npx @quantracode/vibecheck scan --policy startup -o vibecheck-scan.json'
             }
             post {
                 always {
@@ -361,7 +361,7 @@ pipelines:
           - node
         script:
           - npm ci
-          - npx @vibecheck/cli scan --policy startup -o vibecheck-scan.json
+          - npx @quantracode/vibecheck scan --policy startup -o vibecheck-scan.json
         artifacts:
           - vibecheck-scan.json
 
@@ -373,7 +373,7 @@ pipelines:
             - node
           script:
             - npm ci
-            - npx @vibecheck/cli scan --policy strict
+            - npx @quantracode/vibecheck scan --policy strict
 ```
 
 ## CLI Reference
@@ -382,8 +382,10 @@ pipelines:
 
 ```bash
 vibecheck scan [path]           # Scan a directory (default: current)
+vibecheck view                  # Start local viewer for scan results
 vibecheck evaluate              # Evaluate scan artifact against policy
 vibecheck scan --help           # Show all scan options
+vibecheck view --help           # Show all view options
 vibecheck evaluate --help       # Show all evaluate options
 ```
 
@@ -526,6 +528,28 @@ For GitHub Code Scanning integration:
 ```
 
 This displays findings directly in GitHub's Security tab and PR file views.
+
+## Viewing Results Locally
+
+After downloading scan artifacts from CI, you can view them with the built-in viewer:
+
+```bash
+# Download artifact from CI (example using GitHub CLI)
+gh run download <run-id> -n vibecheck-scan
+
+# View the results
+npx @quantracode/vibecheck view -a vibecheck-scan.json
+```
+
+The viewer will:
+- Start a local server at http://localhost:3000
+- Auto-open your browser
+- Load the artifact automatically
+
+This is useful for:
+- Debugging failed CI scans
+- Reviewing findings in detail
+- Sharing results with team members
 
 ## Two-Step Workflow: Scan + Evaluate
 

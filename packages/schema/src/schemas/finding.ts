@@ -24,6 +24,11 @@ export const CategorySchema = z.enum([
   "uploads",
   "hallucinations",
   "abuse",
+  // Phase 4 categories
+  "correlation",    // Cross-pack correlation findings
+  "authorization",  // Role/ownership/privilege checks
+  "lifecycle",      // Create/update/delete symmetry
+  "supply-chain",   // Package.json/lockfile analysis
   "other",
 ]);
 
@@ -67,6 +72,35 @@ export const AbuseClassificationSchema = z.object({
   confidence: z.number().min(0).max(1),
 });
 
+// ============================================================================
+// Cross-Pack Correlation Data (Phase 4)
+// ============================================================================
+
+export const CorrelationPatternSchema = z.enum([
+  // PR #1 patterns
+  "auth_without_validation",     // Route has auth but no input validation
+  "middleware_bypass",           // Middleware exists but route not covered
+  "secret_in_unprotected",       // Secret used in unprotected endpoint
+  "validation_without_auth",     // Input validated but no auth on state-changing
+  "create_update_asymmetry",     // CREATE validates, UPDATE doesn't
+  "ownership_without_auth",      // Ownership check but no auth check
+  // PR #2 patterns
+  "middleware_upload_gap",       // Upload endpoint not covered by middleware
+  "network_auth_leak",           // Token forwarded to SSRF-prone fetch
+  "privacy_auth_context",        // Sensitive logging in authenticated context
+  "crypto_auth_gate",            // jwt.decode() on auth gate path
+  "hallucination_coverage_gap",  // Comment claims protection, proof trace disagrees
+]);
+
+export const CorrelationDataSchema = z.object({
+  /** IDs of related findings that form this correlation */
+  relatedFindingIds: z.array(z.string()),
+  /** The correlation pattern detected */
+  pattern: CorrelationPatternSchema,
+  /** Brief explanation of the correlation */
+  explanation: z.string(),
+});
+
 export const RemediationSchema = z.object({
   recommendedFix: z.string(),
   patch: z.string().optional(),
@@ -95,6 +129,10 @@ export const FindingSchema = z.object({
   fingerprint: z.string(),
   /** Optional compute abuse classification */
   abuseClassification: AbuseClassificationSchema.optional(),
+  /** Optional correlation data for cross-pack findings (Phase 4) */
+  correlationData: CorrelationDataSchema.optional(),
+  /** References to related finding IDs/fingerprints (Phase 4) */
+  relatedFindings: z.array(z.string()).optional(),
 });
 
 export type Severity = z.infer<typeof SeveritySchema>;
@@ -104,4 +142,6 @@ export type ReferenceLinks = z.infer<typeof ReferenceLinksSchema>;
 export type AbuseRisk = z.infer<typeof AbuseRiskSchema>;
 export type AbuseCategory = z.infer<typeof AbuseCategorySchema>;
 export type AbuseClassification = z.infer<typeof AbuseClassificationSchema>;
+export type CorrelationPattern = z.infer<typeof CorrelationPatternSchema>;
+export type CorrelationData = z.infer<typeof CorrelationDataSchema>;
 export type Finding = z.infer<typeof FindingSchema>;

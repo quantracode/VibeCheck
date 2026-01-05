@@ -15,6 +15,9 @@ export { middlewarePack } from "./middleware/index.js";
 export { cryptoPack } from "./crypto/index.js";
 export { uploadsPack } from "./uploads/index.js";
 export { abusePack } from "./abuse/index.js";
+export { authorizationPack } from "./authorization/index.js";
+export { lifecyclePack } from "./lifecycle/index.js";
+export { supplyChainPack } from "./supply-chain/index.js";
 
 // Import packs for aggregation
 import type { ScannerPack, Scanner } from "./types.js";
@@ -28,6 +31,9 @@ import { middlewarePack } from "./middleware/index.js";
 import { cryptoPack } from "./crypto/index.js";
 import { uploadsPack } from "./uploads/index.js";
 import { abusePack } from "./abuse/index.js";
+import { authorizationPack } from "./authorization/index.js";
+import { lifecyclePack } from "./lifecycle/index.js";
+import { supplyChainPack } from "./supply-chain/index.js";
 
 // Phase 3 scanners
 import {
@@ -49,6 +55,9 @@ export const ALL_SCANNER_PACKS: ScannerPack[] = [
   cryptoPack,
   uploadsPack,
   abusePack,
+  authorizationPack,
+  lifecyclePack,
+  supplyChainPack,
   // Phase 3 packs
   hallucinationsPackPhase3,
   authPackPhase3,
@@ -112,4 +121,19 @@ export const SUPPORTED_RULES = [
   "VC-ABUSE-002",
   "VC-ABUSE-003",
   "VC-ABUSE-004",
+  // Authorization pack
+  "VC-AUTHZ-001",
+  "VC-AUTHZ-002",
+  "VC-AUTHZ-003",
+  "VC-AUTHZ-004",
+  // Lifecycle pack
+  "VC-LIFE-001",
+  "VC-LIFE-002",
+  "VC-LIFE-003",
+  // Supply Chain pack
+  "VC-SUP-001",
+  "VC-SUP-002",
+  "VC-SUP-003",
+  "VC-SUP-004",
+  "VC-SUP-005",
 ] as const;

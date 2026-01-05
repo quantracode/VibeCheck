@@ -112,7 +112,7 @@ vibecheck scan --policy ./my-policy.json
 ```yaml
 # GitHub Actions
 - name: Security Scan
-  run: npx @vibecheck/cli scan --policy strict
+  run: npx @quantracode/vibecheck scan --policy strict
   # Fails the job if policy violated
 ```
 

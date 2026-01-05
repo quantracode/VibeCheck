@@ -15,6 +15,7 @@ import {
   Lock,
   Scale,
   Gavel,
+  UserCheck,
 } from "lucide-react";
 
 const navigation = [
@@ -32,6 +33,7 @@ const navigation = [
       { name: "Security Philosophy", href: "/docs/security-philosophy", icon: Scale },
       { name: "Local-Only Mode", href: "/docs/local-only-mode", icon: Lock },
       { name: "Security Rules", href: "/docs/rules", icon: Shield },
+      { name: "Auth vs Authorization", href: "/docs/authorization", icon: UserCheck },
       { name: "Severity Levels", href: "/docs/severity", icon: AlertTriangle },
     ],
   },

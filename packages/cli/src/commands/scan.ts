@@ -8,6 +8,7 @@ import {
   type Finding,
   type Severity,
 } from "@vibecheck/schema";
+import { CLI_VERSION } from "../constants.js";
 import {
   writeFileSync,
   resolvePath,
@@ -30,6 +31,11 @@ import {
   calculateCoverage,
   mineAllIntentClaims,
 } from "../phase3/index.js";
+import {
+  runCorrelationPass,
+  shouldRunCorrelation,
+  type CorrelationResult,
+} from "../phase4/correlator.js";
 import { toSarif, sarifToJson } from "../utils/sarif-formatter.js";
 import { ScanProgress, Spinner } from "../utils/progress.js";
 
@@ -256,9 +262,12 @@ function createArtifact(
   fileCount: number,
   repoName?: string,
   metrics?: { filesScanned: number; scanDurationMs: number },
-  phase3Data?: Phase3Data
+  phase3Data?: Phase3Data,
+  correlationResult?: CorrelationResult
 ): ScanArtifact {
-  const summary = computeSummary(findings);
+  // Use correlation-enhanced findings if available
+  const finalFindings = correlationResult?.findings ?? findings;
+  const summary = computeSummary(finalFindings);
   const gitInfo = getGitInfo(targetDir);
   const name = repoName ?? getRepoName(targetDir);
 
@@ -267,7 +276,7 @@ function createArtifact(
     generatedAt: new Date().toISOString(),
     tool: {
       name: "vibecheck",
-      version: "0.0.1",
+      version: CLI_VERSION,
     },
     repo: {
       name,
@@ -275,7 +284,7 @@ function createArtifact(
       git: gitInfo,
     },
     summary,
-    findings,
+    findings: finalFindings,
   };
 
   if (metrics) {
@@ -301,6 +310,12 @@ function createArtifact(
         ...phase3Data.coverageMetrics,
       };
     }
+  }
+
+  // Add Phase 4 correlation data if provided
+  if (correlationResult) {
+    artifact.correlationSummary = correlationResult.correlationSummary;
+    artifact.graph = correlationResult.graph;
   }
 
   return artifact;
@@ -560,6 +575,28 @@ export async function executeScan(
     console.log(`\x1b[90m   └─ Auth coverage: ${Math.round(coverageRaw.authCoverage * 100)}%\x1b[0m`);
   }
 
+  // Phase 4: Run correlation pass if there are findings to correlate
+  let correlationResult: CorrelationResult | undefined;
+  if (shouldRunCorrelation(findings)) {
+    const correlationSpinner = new Spinner("Running Phase 4 correlation pass");
+    correlationSpinner.start();
+
+    correlationResult = runCorrelationPass({
+      findings,
+      routeMap: phase3Data?.routeMap,
+      middlewareMap: phase3Data?.middlewareMap,
+      proofTraces: phase3Data?.proofTraces,
+      intentMap: phase3Data?.intentMap,
+    });
+
+    const correlationCount = correlationResult.correlationSummary.totalCorrelations;
+    if (correlationCount > 0) {
+      correlationSpinner.succeed(`Phase 4 correlation: ${correlationCount} pattern(s) detected`);
+    } else {
+      correlationSpinner.succeed("Phase 4 correlation: no patterns detected");
+    }
+  }
+
   // Create artifact
   const artifact = createArtifact(
     findings,
@@ -570,7 +607,8 @@ export async function executeScan(
       filesScanned: initialContext.fileIndex.allSourceFiles.length,
       scanDurationMs,
     },
-    phase3Data
+    phase3Data,
+    correlationResult
   );
 
   // Validate artifact before writing
@@ -693,10 +731,15 @@ export function registerScanCommand(program: Command): void {
     .addHelpText(
       "after",
       `
+Quickstart (no install):
+  $ npx @quantracode/vibecheck scan --fail-on off --out vibecheck-scan.json
+  $ pnpm dlx @quantracode/vibecheck scan --fail-on off --out vibecheck-scan.json
+
 Examples:
   $ vibecheck scan                              Scan current directory
   $ vibecheck scan ./my-app                     Scan specific directory
-  $ vibecheck scan -t ./my-app                  Same as above (explicit target)
+  $ vibecheck scan --target ./my-app            Same as above (explicit target)
+  $ vibecheck scan --target ../myapp --out scan.json   Scan another folder
   $ vibecheck scan --format sarif               Output in SARIF format
   $ vibecheck scan --format both                Output both JSON and SARIF
   $ vibecheck scan -o ./reports                 Custom output directory
@@ -707,6 +750,10 @@ Examples:
   $ vibecheck scan --include-tests              Include test files
   $ vibecheck scan --no-emit-intents            Skip intent mining
   $ vibecheck scan --no-emit-traces             Skip proof trace building
+
+Windows-safe output paths:
+  $ vibecheck scan --out vibecheck-scan.json    Relative path (recommended)
+  $ vibecheck scan --out ./reports/scan.json    Subdirectory path
 
 Default excludes:
   node_modules, dist, .git, build, .next, coverage, .turbo, .cache,

@@ -14,6 +14,8 @@ interface FeatureGateProps {
   fallback?: ReactNode;
   /** If true, renders children but disabled/overlayed */
   showPreview?: boolean;
+  /** If true, shows a full-page upgrade prompt instead of just an overlay */
+  fullPage?: boolean;
   /** Custom className for the wrapper */
   className?: string;
 }
@@ -33,9 +35,11 @@ export function FeatureGate({
   children,
   fallback,
   showPreview = false,
+  fullPage = false,
   className,
 }: FeatureGateProps) {
   const { hasAccess, isLoading } = useFeatureAccess(feature);
+  const featureInfo = FEATURES[feature];
 
   // Loading state
   if (isLoading) {
@@ -48,13 +52,47 @@ export function FeatureGate({
 
   // Feature available
   if (hasAccess) {
-    return <div className={className}>{children}</div>;
+    return <>{children}</>;
+  }
+
+  // Feature locked - show full page upgrade prompt
+  if (fullPage) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 px-4">
+        <div className="max-w-md text-center space-y-6">
+          <div className="w-16 h-16 mx-auto rounded-full bg-amber-500/10 flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-amber-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold mb-2">
+              {featureInfo?.name ?? "Pro Feature"}
+            </h2>
+            <p className="text-muted-foreground">
+              {featureInfo?.description ?? "This feature requires a Pro license."}
+            </p>
+          </div>
+          <UpgradePrompt feature={feature} />
+        </div>
+      </div>
+    );
   }
 
   // Feature locked - show preview with overlay
   if (showPreview) {
     return (
-      <div className={`relative ${className}`}>
+      <div className={`relative ${className ?? ""}`}>
         {/* Blurred/disabled content */}
         <div className="pointer-events-none opacity-40 blur-[1px] select-none">
           {children}

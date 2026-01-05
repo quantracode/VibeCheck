@@ -2,25 +2,32 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield, LayoutDashboard, List, Moon, Sun, Route, Lightbulb, ShieldCheck, Network } from "lucide-react";
+import { Shield, LayoutDashboard, List, Moon, Sun, Route, Lightbulb, ShieldCheck, Network, FileText, Sparkles, GitBranch, Radar } from "lucide-react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ArtifactSwitcher } from "./ArtifactSwitcher";
-import { LicenseButton } from "./license";
+import { LicenseButton, useLicenseStore } from "./license";
 
+// Navigation items - items after "Report" are Pro features
 const navItems = [
+  // Free tier
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/findings", label: "Findings", icon: List },
   { href: "/routes", label: "Routes", icon: Route },
+  { href: "/coverage", label: "Coverage", icon: Radar },
+  { href: "/trace-graph", label: "Trace Graph", icon: GitBranch },
   { href: "/intents", label: "Intents", icon: Lightbulb },
-  { href: "/architecture", label: "Architecture", icon: Network },
-  { href: "/gate", label: "Gate", icon: ShieldCheck },
+  // Pro tier (everything from Report onwards)
+  { href: "/report", label: "Report", icon: FileText, pro: true },
+  { href: "/architecture", label: "Architecture", icon: Network, pro: true },
+  { href: "/policy", label: "Policy", icon: ShieldCheck, pro: true },
 ];
 
 export function Header() {
   const pathname = usePathname();
   const { setTheme, resolvedTheme } = useTheme();
+  const { isLicensed: hasProLicense } = useLicenseStore();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
@@ -41,6 +48,8 @@ export function Header() {
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/" && pathname.startsWith(item.href));
+              const isPro = "pro" in item && item.pro;
+              const showProBadge = isPro && !hasProLicense;
 
               return (
                 <Link
@@ -57,6 +66,9 @@ export function Header() {
                 >
                   <item.icon className={cn("w-4 h-4", isActive && "drop-shadow-sm")} />
                   {item.label}
+                  {showProBadge && (
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                  )}
                 </Link>
               );
             })}

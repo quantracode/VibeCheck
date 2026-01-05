@@ -1,0 +1,9 @@
+{
+  "name": "authz-vulnerable-app",
+  "version": "1.0.0",
+  "dependencies": {
+    "next": "14.0.0",
+    "next-auth": "4.24.0",
+    "@prisma/client": "5.0.0"
+  }
+}

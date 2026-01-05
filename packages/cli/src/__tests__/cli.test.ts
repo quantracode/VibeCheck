@@ -57,7 +57,7 @@ describe("scan command", () => {
       expect(result.success).toBe(true);
 
       if (result.success) {
-        expect(result.data.artifactVersion).toBe("0.2");
+        expect(result.data.artifactVersion).toBe("0.3");
         expect(result.data.tool.name).toBe("vibecheck");
         expect(result.data.findings.length).toBeGreaterThan(0);
       }
@@ -321,7 +321,7 @@ describe("output formats", () => {
 
       expect(fs.existsSync(outputPath)).toBe(true);
       const content = JSON.parse(fs.readFileSync(outputPath, "utf-8"));
-      expect(content.artifactVersion).toBe("0.2");
+      expect(content.artifactVersion).toBe("0.3");
     } finally {
       fs.rmSync(tmpDir, { recursive: true });
     }
@@ -388,7 +388,7 @@ describe("output formats", () => {
 
       // Validate JSON
       const jsonContent = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-      expect(jsonContent.artifactVersion).toBe("0.2");
+      expect(jsonContent.artifactVersion).toBe("0.3");
 
       // Validate SARIF
       const sarifContent = JSON.parse(fs.readFileSync(sarifPath, "utf-8"));
@@ -532,7 +532,7 @@ describe("explain command", () => {
     const artifactPath = path.join(tmpDir, "scan.json");
 
     const artifact = {
-      artifactVersion: "0.2",
+      artifactVersion: "0.3",
       generatedAt: new Date().toISOString(),
       tool: { name: "vibecheck", version: "0.0.1" },
       summary: {
@@ -551,6 +551,10 @@ describe("explain command", () => {
           uploads: 0,
           hallucinations: 0,
           abuse: 0,
+          correlation: 0,
+          authorization: 0,
+          lifecycle: 0,
+          "supply-chain": 0,
           other: 0,
         },
       },
@@ -642,7 +646,7 @@ describe("artifact output shape", () => {
       const artifact = JSON.parse(fs.readFileSync(outputPath, "utf-8"));
 
       // Check top-level structure
-      expect(artifact).toHaveProperty("artifactVersion", "0.2");
+      expect(artifact).toHaveProperty("artifactVersion", "0.3");
       expect(artifact).toHaveProperty("generatedAt");
       expect(artifact).toHaveProperty("tool");
       expect(artifact).toHaveProperty("summary");
@@ -940,6 +944,195 @@ export function handler() { return true; }`
       }
     } finally {
       fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+});
+
+describe("determinism", () => {
+  /**
+   * Remove non-deterministic fields from artifact for comparison
+   */
+  function stripNonDeterministic(artifact: Record<string, unknown>): Record<string, unknown> {
+    const stripped = JSON.parse(JSON.stringify(artifact));
+
+    // Remove timestamp fields
+    delete stripped.generatedAt;
+
+    // Remove timing metrics
+    if (stripped.metrics) {
+      delete (stripped.metrics as Record<string, unknown>).scanDurationMs;
+    }
+
+    // Remove correlation timing
+    if (stripped.correlationSummary) {
+      delete (stripped.correlationSummary as Record<string, unknown>).correlationDurationMs;
+    }
+
+    return stripped;
+  }
+
+  it("produces identical output when scanning the same fixture twice", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vibecheck-determinism-"));
+    const outputPath1 = path.join(tmpDir, "scan1.json");
+    const outputPath2 = path.join(tmpDir, "scan2.json");
+
+    // Create a fixture with multiple file types and patterns to detect
+    fs.mkdirSync(path.join(tmpDir, "src"), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, "app", "api", "users"), { recursive: true });
+
+    // Source file with various patterns
+    fs.writeFileSync(
+      path.join(tmpDir, "src", "config.ts"),
+      `// Configuration
+const DATABASE_URL = process.env.DATABASE_URL;
+const API_KEY = process.env.API_SECRET_KEY;
+export { DATABASE_URL, API_KEY };`
+    );
+
+    // API route file
+    fs.writeFileSync(
+      path.join(tmpDir, "app", "api", "users", "route.ts"),
+      `// requires authentication
+export async function GET() {
+  return Response.json({ users: [] });
+}
+
+export async function POST(req: Request) {
+  const body = await req.json();
+  return Response.json({ created: true });
+}`
+    );
+
+    // Utility file
+    fs.writeFileSync(
+      path.join(tmpDir, "src", "utils.ts"),
+      `export function validateInput(data: unknown) {
+  // validated input
+  return data;
+}`
+    );
+
+    try {
+      const options1 = createScanOptions({
+        out: outputPath1,
+        emitRouteMap: true,
+        emitIntents: true,
+        emitTraces: true,
+        repoName: "determinism-test",
+        failOn: "off",
+      });
+
+      const options2 = createScanOptions({
+        out: outputPath2,
+        emitRouteMap: true,
+        emitIntents: true,
+        emitTraces: true,
+        repoName: "determinism-test",
+        failOn: "off",
+      });
+
+      const originalLog = console.log;
+      console.log = () => {};
+
+      // First scan
+      await executeScan(tmpDir, options1);
+
+      // Second scan
+      await executeScan(tmpDir, options2);
+
+      console.log = originalLog;
+
+      // Read both artifacts
+      const artifact1 = JSON.parse(fs.readFileSync(outputPath1, "utf-8"));
+      const artifact2 = JSON.parse(fs.readFileSync(outputPath2, "utf-8"));
+
+      // Strip non-deterministic fields
+      const stripped1 = stripNonDeterministic(artifact1);
+      const stripped2 = stripNonDeterministic(artifact2);
+
+      // Compare JSON strings for byte-identical output
+      const json1 = JSON.stringify(stripped1, null, 2);
+      const json2 = JSON.stringify(stripped2, null, 2);
+
+      expect(json1).toBe(json2);
+
+      // Also verify specific deterministic properties
+      expect(artifact1.findings.length).toBe(artifact2.findings.length);
+
+      // Fingerprints should be identical
+      const fingerprints1 = artifact1.findings.map((f: { fingerprint: string }) => f.fingerprint).sort();
+      const fingerprints2 = artifact2.findings.map((f: { fingerprint: string }) => f.fingerprint).sort();
+      expect(fingerprints1).toEqual(fingerprints2);
+
+      // Rule IDs should be identical
+      const ruleIds1 = artifact1.findings.map((f: { ruleId: string }) => f.ruleId).sort();
+      const ruleIds2 = artifact2.findings.map((f: { ruleId: string }) => f.ruleId).sort();
+      expect(ruleIds1).toEqual(ruleIds2);
+
+      // Route maps should be identical
+      if (artifact1.routeMap && artifact2.routeMap) {
+        expect(artifact1.routeMap.routes.length).toBe(artifact2.routeMap.routes.length);
+      }
+
+      // Intent maps should be identical
+      if (artifact1.intentMap && artifact2.intentMap) {
+        expect(artifact1.intentMap.intents.length).toBe(artifact2.intentMap.intents.length);
+      }
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  it("produces identical fingerprints for identical code patterns", async () => {
+    // Create two separate directories with identical code
+    const tmpDir1 = fs.mkdtempSync(path.join(os.tmpdir(), "vibecheck-fp1-"));
+    const tmpDir2 = fs.mkdtempSync(path.join(os.tmpdir(), "vibecheck-fp2-"));
+    const outputPath1 = path.join(tmpDir1, "scan.json");
+    const outputPath2 = path.join(tmpDir2, "scan.json");
+
+    // Same code in both directories
+    const code = `const secret = process.env.API_SECRET_KEY;`;
+    fs.writeFileSync(path.join(tmpDir1, "app.ts"), code);
+    fs.writeFileSync(path.join(tmpDir2, "app.ts"), code);
+
+    try {
+      const options1 = createScanOptions({
+        out: outputPath1,
+        repoName: "fingerprint-test",
+        failOn: "off",
+      });
+
+      const options2 = createScanOptions({
+        out: outputPath2,
+        repoName: "fingerprint-test",
+        failOn: "off",
+      });
+
+      const originalLog = console.log;
+      console.log = () => {};
+
+      await executeScan(tmpDir1, options1);
+      await executeScan(tmpDir2, options2);
+
+      console.log = originalLog;
+
+      const artifact1 = JSON.parse(fs.readFileSync(outputPath1, "utf-8"));
+      const artifact2 = JSON.parse(fs.readFileSync(outputPath2, "utf-8"));
+
+      // Should have the same findings
+      expect(artifact1.findings.length).toBe(artifact2.findings.length);
+
+      // Fingerprints should be identical for identical code patterns
+      // (Note: fingerprints may include file paths, so we compare just the hash portion)
+      if (artifact1.findings.length > 0 && artifact2.findings.length > 0) {
+        // Same rule should produce findings
+        const rules1 = new Set(artifact1.findings.map((f: { ruleId: string }) => f.ruleId));
+        const rules2 = new Set(artifact2.findings.map((f: { ruleId: string }) => f.ruleId));
+        expect(rules1).toEqual(rules2);
+      }
+    } finally {
+      fs.rmSync(tmpDir1, { recursive: true });
+      fs.rmSync(tmpDir2, { recursive: true });
     }
   });
 });

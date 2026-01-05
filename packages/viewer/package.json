@@ -1,0 +1,30 @@
+{
+  "name": "@quantracode/vibecheck-viewer",
+  "version": "0.0.7",
+  "description": "Web viewer for VibeCheck security scan results",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "vibecheck",
+    "security",
+    "viewer",
+    "static"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quantracode/VibeCheck.git",
+    "directory": "packages/viewer"
+  },
+  "homepage": "https://github.com/quantracode/VibeCheck#readme",
+  "bugs": {
+    "url": "https://github.com/quantracode/VibeCheck/issues"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "prepublishOnly": "pnpm run build"
+  }
+}

@@ -20,7 +20,7 @@ const createFinding = (overrides: Partial<Finding> = {}): Finding => ({
 });
 
 const createArtifact = (findings: Finding[]): ScanArtifact => ({
-  artifactVersion: "0.2",
+  artifactVersion: "0.3",
   generatedAt: new Date().toISOString(),
   tool: { name: "vibecheck", version: "0.0.1" },
   repo: { name: "test-repo", rootPathHash: "abc123" },
@@ -30,7 +30,10 @@ const createArtifact = (findings: Finding[]): ScanArtifact => ({
     byCategory: {
       auth: 0, validation: 0, middleware: 0, secrets: 0,
       injection: 0, privacy: 0, config: 0, network: 0,
-      crypto: 0, uploads: 0, hallucinations: 0, other: 0,
+      crypto: 0, uploads: 0, hallucinations: 0, abuse: 0,
+      // Phase 4 categories
+      correlation: 0, authorization: 0, lifecycle: 0, "supply-chain": 0,
+      other: 0,
     },
   },
   findings,
@@ -105,6 +108,9 @@ describe("evaluate", () => {
             failOnSeverityRegression: false,
             failOnNetIncrease: false,
             warnOnNewFindings: true,
+            failOnProtectionRemoved: false,
+            warnOnProtectionRemoved: false,
+            failOnSemanticRegression: false,
           },
         },
       });
@@ -135,6 +141,9 @@ describe("evaluate", () => {
             failOnSeverityRegression: false,
             failOnNetIncrease: false,
             warnOnNewFindings: true,
+            failOnProtectionRemoved: false,
+            warnOnProtectionRemoved: false,
+            failOnSemanticRegression: false,
           },
         },
       });
@@ -168,6 +177,9 @@ describe("evaluate", () => {
             failOnSeverityRegression: false,
             failOnNetIncrease: false,
             warnOnNewFindings: true,
+            failOnProtectionRemoved: false,
+            warnOnProtectionRemoved: false,
+            failOnSemanticRegression: false,
           },
         },
       });
@@ -199,6 +211,9 @@ describe("evaluate", () => {
             failOnSeverityRegression: false,
             failOnNetIncrease: false,
             warnOnNewFindings: true,
+            failOnProtectionRemoved: false,
+            warnOnProtectionRemoved: false,
+            failOnSemanticRegression: false,
           },
         },
       });
@@ -368,6 +383,9 @@ describe("evaluate", () => {
             failOnSeverityRegression: false,
             failOnNetIncrease: false,
             warnOnNewFindings: true,
+            failOnProtectionRemoved: false,
+            warnOnProtectionRemoved: false,
+            failOnSemanticRegression: false,
           },
         },
       });
@@ -405,6 +423,9 @@ describe("evaluate", () => {
             failOnSeverityRegression: true,
             failOnNetIncrease: false,
             warnOnNewFindings: false,
+            failOnProtectionRemoved: false,
+            warnOnProtectionRemoved: false,
+            failOnSemanticRegression: false,
           },
         },
       });
@@ -491,5 +512,113 @@ describe("mergeConfigs", () => {
     });
     expect(merged.regression.failOnNetIncrease).toBe(true);
     expect(merged.regression.failOnNewHighCritical).toBe(profile.regression.failOnNewHighCritical);
+  });
+});
+
+describe("correlated findings", () => {
+  it("counts correlated findings in summary", () => {
+    const correlatedFinding = createFinding({
+      category: "correlation",
+      ruleId: "VC-CORR-001",
+      severity: "medium",
+      correlationData: {
+        relatedFindingIds: ["sha256:related123"],
+        pattern: "auth_without_validation",
+        explanation: "Test correlation",
+      },
+      relatedFindings: ["sha256:related123"],
+    });
+
+    const artifact = createArtifact([correlatedFinding]);
+    const result = evaluate({ artifact, profile: "startup" });
+
+    // Correlated finding should be counted
+    expect(result.summary.total).toBe(1);
+    expect(result.summary.byCategory.correlation).toBe(1);
+  });
+
+  it("applies category override to correlated findings", () => {
+    const correlatedFinding = createFinding({
+      category: "correlation",
+      ruleId: "VC-CORR-001",
+      severity: "critical",
+    });
+
+    const artifact = createArtifact([correlatedFinding]);
+    const result = evaluate({
+      artifact,
+      config: {
+        thresholds: getProfile("strict").thresholds,
+        overrides: [{ category: "correlation", action: "ignore" }],
+        regression: getProfile("strict").regression,
+      },
+    });
+
+    expect(result.status).toBe("pass");
+    expect(result.summary.ignored).toBe(1);
+  });
+
+  it("waives correlated findings by ruleId pattern", () => {
+    const correlatedFinding = createFinding({
+      category: "correlation",
+      ruleId: "VC-CORR-001",
+      severity: "critical",
+      fingerprint: "sha256:correlated123",
+    });
+
+    const artifact = createArtifact([correlatedFinding]);
+    const waivers: Waiver[] = [
+      {
+        id: "w-corr",
+        match: { ruleId: "VC-CORR-*" },
+        reason: "All correlations waived",
+        createdBy: "test@example.com",
+        createdAt: new Date().toISOString(),
+      },
+    ];
+
+    const result = evaluate({ artifact, waivers, profile: "strict" });
+    expect(result.status).toBe("pass");
+    expect(result.waivedFindings).toHaveLength(1);
+    expect(result.summary.waived).toBe(1);
+  });
+
+  it("fails on critical correlated findings with strict profile", () => {
+    const correlatedFinding = createFinding({
+      category: "correlation",
+      ruleId: "VC-CORR-005",
+      severity: "critical",
+      confidence: 0.9,
+    });
+
+    const artifact = createArtifact([correlatedFinding]);
+    const result = evaluate({ artifact, profile: "strict" });
+
+    expect(result.status).toBe("fail");
+    expect(result.activeFindings).toHaveLength(1);
+    expect(result.activeFindings[0].ruleId).toBe("VC-CORR-005");
+  });
+
+  it("downgrades correlated finding severity via override", () => {
+    const correlatedFinding = createFinding({
+      category: "correlation",
+      ruleId: "VC-CORR-003",
+      severity: "critical",
+      confidence: 0.9,
+    });
+
+    const artifact = createArtifact([correlatedFinding]);
+    const result = evaluate({
+      artifact,
+      config: {
+        thresholds: getProfile("strict").thresholds,
+        overrides: [{ ruleId: "VC-CORR-003", action: "downgrade", severity: "low" }],
+        regression: getProfile("strict").regression,
+      },
+    });
+
+    expect(result.status).toBe("pass");
+    expect(result.activeFindings).toHaveLength(1);
+    expect(result.activeFindings[0].severity).toBe("low");
   });
 });

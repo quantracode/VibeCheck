@@ -1,5 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import type { ScanArtifact } from "@vibecheck/schema";
+import { migrateArtifact } from "./migrate";
 
 interface StoredArtifact {
   id: string;
@@ -37,16 +38,20 @@ async function getDB(): Promise<IDBPDatabase<VibeCheckDB>> {
 }
 
 export async function saveArtifact(
-  artifact: ScanArtifact,
+  artifact: ScanArtifact | unknown,
   name?: string
 ): Promise<string> {
   const db = await getDB();
   const id = `artifact-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+  // Migrate older artifact versions to be compatible with 0.3 schema
+  const migratedArtifact = migrateArtifact(artifact);
+
   const storedArtifact: StoredArtifact = {
     id,
-    artifact,
+    artifact: migratedArtifact,
     importedAt: new Date().toISOString(),
-    name: name ?? artifact.repo?.name ?? `Scan ${new Date().toLocaleDateString()}`,
+    name: name ?? migratedArtifact.repo?.name ?? `Scan ${new Date().toLocaleDateString()}`,
   };
 
   await db.put("artifacts", storedArtifact);

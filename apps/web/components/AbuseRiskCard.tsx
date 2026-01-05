@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AbuseRiskBadge, AbuseCategoryLabel } from "./AbuseRiskBadge";
+import { FeatureGate } from "@/components/license";
 import type { Finding, AbuseRisk } from "@vibecheck/schema";
 
 interface AbuseRiskCardProps {
@@ -71,16 +72,20 @@ export function AbuseRiskCard({ findings, className }: AbuseRiskCardProps) {
   }
 
   return (
-    <Card className={cn("border-orange-500/30 bg-orange-500/5", className)}>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Zap className="w-5 h-5 text-orange-400" />
-          <span>Compute Abuse Risk</span>
-          <span className="ml-auto text-sm font-normal text-muted-foreground">
-            {stats.total} endpoint{stats.total !== 1 ? "s" : ""}
-          </span>
-        </CardTitle>
-      </CardHeader>
+    <FeatureGate feature="abuse_classification" showPreview className={cn(className)}>
+      <Card className="border-orange-500/30 bg-orange-500/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Zap className="w-5 h-5 text-orange-400" />
+            <span>Compute Abuse Risk</span>
+            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-amber-500/10 text-amber-500 rounded border border-amber-500/20 ml-2">
+              Pro
+            </span>
+            <span className="ml-auto text-sm font-normal text-muted-foreground">
+              {stats.total} endpoint{stats.total !== 1 ? "s" : ""}
+            </span>
+          </CardTitle>
+        </CardHeader>
       <CardContent className="space-y-4">
         {/* Risk Summary */}
         <div className="grid grid-cols-4 gap-2 text-center">
@@ -175,6 +180,7 @@ export function AbuseRiskCard({ findings, className }: AbuseRiskCardProps) {
           </Link>
         )}
       </CardContent>
-    </Card>
+      </Card>
+    </FeatureGate>
   );
 }
