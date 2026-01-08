@@ -70,12 +70,8 @@ export async function scanSensitiveLogging(context: ScanContext): Promise<Findin
         category: "privacy",
         evidence,
         remediation: {
-          recommendedFix: `Remove sensitive data from log statements. Only log non-sensitive identifiers like user IDs, timestamps, or action types.`,
-          patch: `// Instead of:
-console.log("Login:", { email, password });
-
-// Do:
-console.log("Login attempt:", { email, timestamp: Date.now() });`,
+          recommendedFix: `Remove sensitive data from log statements. Only log non-sensitive identifiers like user IDs, timestamps, or action types. Never log passwords, tokens, auth headers, secrets, or API keys.`,
+          // No patch for sensitive logging - requires understanding which data is needed for debugging vs which should be redacted
         },
         links: {
           cwe: "https://cwe.mitre.org/data/definitions/532.html",

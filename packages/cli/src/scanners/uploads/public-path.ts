@@ -61,29 +61,8 @@ export async function scanPublicUploadPath(context: ScanContext): Promise<Findin
         category: "uploads",
         evidence,
         remediation: {
-          recommendedFix: `Store uploads outside the public directory and serve them through a controlled API endpoint. Always sanitize and generate safe filenames.`,
-          patch: `// DON'T: Write directly to public folder
-// fs.writeFile(path.join('public', filename), buffer);
-
-// DO: Store outside public with generated names
-import { randomUUID } from 'crypto';
-import path from 'path';
-
-// Generate safe filename
-const ext = path.extname(originalFilename).toLowerCase();
-const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
-if (!allowedExtensions.includes(ext)) {
-  throw new Error('Invalid file extension');
-}
-
-const safeFilename = \`\${randomUUID()}\${ext}\`;
-const uploadPath = path.join(process.cwd(), 'uploads', safeFilename);
-
-// Write to non-public directory
-await fs.writeFile(uploadPath, buffer);
-
-// Serve through API route:
-// GET /api/files/[id] -> Stream file from uploads directory`,
+          recommendedFix: `Store uploads outside the public directory and serve them through a controlled API endpoint. Always sanitize and generate safe filenames using randomUUID() + validated extension. Store in a non-public directory (e.g., uploads/) and serve through an API route that handles authorization and content-type headers.`,
+          // No patch for upload path fixes - requires restructuring file handling, creating API routes, and implementing authorization logic
         },
         links: {
           cwe: "https://cwe.mitre.org/data/definitions/434.html",

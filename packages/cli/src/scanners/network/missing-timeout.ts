@@ -68,28 +68,8 @@ export async function scanMissingTimeout(context: ScanContext): Promise<Finding[
           category: "network",
           evidence,
           remediation: {
-            recommendedFix: `Add a timeout to prevent indefinite hangs. For fetch, use AbortController; for axios, use the timeout option.`,
-            patch: `// For fetch, use AbortController:
-const controller = new AbortController();
-const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-try {
-  const response = await fetch(url, {
-    signal: controller.signal,
-  });
-  clearTimeout(timeoutId);
-  return response;
-} catch (error) {
-  if (error.name === 'AbortError') {
-    throw new Error('Request timed out');
-  }
-  throw error;
-}
-
-// For axios:
-const response = await axios.get(url, {
-  timeout: 5000,
-});`,
+            recommendedFix: `Add a timeout to prevent indefinite hangs. For fetch, use AbortController with setTimeout(() => controller.abort(), 5000) and handle AbortError. For axios, add timeout: 5000 to options. Choose timeout duration based on expected response times.`,
+            // No patch for timeout fixes - implementation varies by method (fetch vs axios) and requires choosing appropriate timeout duration
           },
           links: {
             cwe: "https://cwe.mitre.org/data/definitions/400.html",

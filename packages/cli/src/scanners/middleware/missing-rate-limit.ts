@@ -116,33 +116,8 @@ export async function scanMissingRateLimit(context: ScanContext): Promise<Findin
         category: "middleware",
         evidence,
         remediation: {
-          recommendedFix: `Add rate limiting to protect against abuse. Consider using @upstash/ratelimit for serverless, or express-rate-limit for Express apps.`,
-          patch: `// Using @upstash/ratelimit with Vercel KV:
-import { Ratelimit } from "@upstash/ratelimit";
-import { kv } from "@vercel/kv";
-
-const ratelimit = new Ratelimit({
-  redis: kv,
-  limiter: Ratelimit.slidingWindow(10, "60 s"), // 10 requests per minute
-});
-
-export async function POST(request: Request) {
-  const ip = request.headers.get("x-forwarded-for") ?? "127.0.0.1";
-  const { success, limit, reset, remaining } = await ratelimit.limit(ip);
-
-  if (!success) {
-    return new Response("Too Many Requests", {
-      status: 429,
-      headers: {
-        "X-RateLimit-Limit": limit.toString(),
-        "X-RateLimit-Remaining": remaining.toString(),
-        "X-RateLimit-Reset": reset.toString(),
-      },
-    });
-  }
-
-  // ... rest of handler
-}`,
+          recommendedFix: `Add rate limiting to protect against abuse. For serverless: use @upstash/ratelimit with Ratelimit.slidingWindow(10, "60 s") and check success before proceeding. For Express: use express-rate-limit middleware. Limit by IP address or user ID.`,
+          // No patch for rate limiting - implementation varies by infrastructure (serverless vs traditional) and requires setup (Redis connection, identifier strategy)
         },
         links: {
           owasp: "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",

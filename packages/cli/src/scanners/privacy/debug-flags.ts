@@ -114,17 +114,8 @@ export async function scanDebugFlags(context: ScanContext): Promise<Finding[]> {
         category: "config",
         evidence,
         remediation: {
-          recommendedFix: `Ensure debug flags are only enabled in development. Use environment variables or NODE_ENV checks.`,
-          patch: `// Guard debug flags with environment check:
-const isDev = process.env.NODE_ENV === 'development';
-
-module.exports = {
-  // Only enable in development
-  ...(isDev && { debug: true }),
-
-  // Or use environment variable:
-  debug: process.env.DEBUG === 'true',
-};`,
+          recommendedFix: `Ensure debug flags are only enabled in development. Use environment variables or NODE_ENV checks. Example: ...(process.env.NODE_ENV === 'development' && { debug: true }) or debug: process.env.DEBUG === 'true'.`,
+          // No patch for debug flag fixes - requires understanding config structure and which flags to guard
         },
         links: {
           cwe: "https://cwe.mitre.org/data/definitions/489.html",

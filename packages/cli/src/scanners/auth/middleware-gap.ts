@@ -142,19 +142,8 @@ export async function scanMiddlewareGap(context: ScanContext): Promise<Finding[]
         evidence,
         remediation: {
           recommendedFix:
-            "Create a middleware.ts file that checks authentication for protected routes. See: https://next-auth.js.org/configuration/nextjs#middleware",
-          patch: `// middleware.ts
-import { withAuth } from "next-auth/middleware";
-
-export default withAuth({
-  callbacks: {
-    authorized: ({ token }) => !!token,
-  },
-});
-
-export const config = {
-  matcher: ["/api/:path*", "/dashboard/:path*"],
-};`,
+            "Create a middleware.ts file that checks authentication for protected routes. Use next-auth's withAuth helper with a matcher config for /api/:path* and other protected routes. See: https://next-auth.js.org/configuration/nextjs#middleware",
+          // No patch for file creation - apply-patches only handles modifications to existing files
         },
         links: {
           owasp: "https://owasp.org/Top10/A01_2021-Broken_Access_Control/",
@@ -227,6 +216,7 @@ export const config = {
       evidence,
       remediation: {
         recommendedFix: `Update the middleware matcher to include API routes. Example: matcher: ['/((?!_next/static|_next/image|favicon.ico).*)', '/api/:path*']`,
+        // No patch for middleware matcher updates - requires understanding the full matcher pattern and what should be included/excluded
       },
       links: {
         owasp: "https://owasp.org/Top10/A01_2021-Broken_Access_Control/",

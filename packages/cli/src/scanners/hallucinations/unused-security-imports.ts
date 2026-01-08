@@ -344,19 +344,8 @@ export async function scanNextAuthNotEnforced(context: ScanContext): Promise<Fin
       category: "auth",
       evidence,
       remediation: {
-        recommendedFix: "Add authentication middleware or explicit auth checks to API routes. See https://next-auth.js.org/configuration/nextjs",
-        patch: `// middleware.ts
-import { withAuth } from "next-auth/middleware";
-
-export default withAuth({
-  callbacks: {
-    authorized: ({ token }) => !!token,
-  },
-});
-
-export const config = {
-  matcher: ["/api/:path*"],
-};`,
+        recommendedFix: "Add authentication middleware or explicit auth checks to API routes. Create middleware.ts using next-auth's withAuth helper with matcher for /api/:path*. See https://next-auth.js.org/configuration/nextjs",
+        // No patch for file creation - apply-patches only handles modifications to existing files
       },
       links: {
         owasp: "https://owasp.org/Top10/A01_2021-Broken_Access_Control/",

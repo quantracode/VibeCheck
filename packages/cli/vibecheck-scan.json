@@ -1,0 +1,2458 @@
+{
+  "artifactVersion": "0.2",
+  "generatedAt": "2026-01-03T01:11:46.939Z",
+  "tool": {
+    "name": "vibecheck",
+    "version": "0.0.1"
+  },
+  "repo": {
+    "name": "VibeCheck",
+    "rootPathHash": "dd441b9c68c88445"
+  },
+  "summary": {
+    "totalFindings": 13,
+    "bySeverity": {
+      "critical": 1,
+      "high": 4,
+      "medium": 8,
+      "low": 0,
+      "info": 0
+    },
+    "byCategory": {
+      "auth": 0,
+      "validation": 0,
+      "middleware": 0,
+      "secrets": 0,
+      "injection": 0,
+      "privacy": 2,
+      "config": 10,
+      "network": 0,
+      "crypto": 1,
+      "uploads": 0,
+      "hallucinations": 0,
+      "abuse": 0,
+      "other": 0
+    }
+  },
+  "findings": [
+    {
+      "id": "vc-priv-001-9d442830",
+      "ruleId": "VC-PRIV-001",
+      "title": "Sensitive data in logs: authCoverage",
+      "description": "The console.log call includes sensitive data (authCoverage). This could expose credentials, tokens, or other sensitive information in log files, monitoring systems, or console output.",
+      "severity": "medium",
+      "confidence": 0.88,
+      "category": "privacy",
+      "evidence": [
+        {
+          "file": "src/commands/intent.ts",
+          "startLine": 249,
+          "endLine": 249,
+          "snippet": "console.log(`  Auth coverage: ${formatPercent(coverage.authCoverage)}`)",
+          "label": "Sensitive data logged: authCoverage"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Remove sensitive data from log statements. Only log non-sensitive identifiers like user IDs, timestamps, or action types.",
+        "patch": "// Instead of:\nconsole.log(\"Login:\", { email, password });\n\n// Do:\nconsole.log(\"Login attempt:\", { email, timestamp: Date.now() });"
+      },
+      "links": {
+        "cwe": "https://cwe.mitre.org/data/definitions/532.html",
+        "owasp": "https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/"
+      },
+      "fingerprint": "9d44283042fe5abf"
+    },
+    {
+      "id": "vc-priv-001-f9a5cc99",
+      "ruleId": "VC-PRIV-001",
+      "title": "Sensitive data in logs: authCoverage",
+      "description": "The console.log call includes sensitive data (authCoverage). This could expose credentials, tokens, or other sensitive information in log files, monitoring systems, or console output.",
+      "severity": "medium",
+      "confidence": 0.88,
+      "category": "privacy",
+      "evidence": [
+        {
+          "file": "src/commands/scan.ts",
+          "startLine": 560,
+          "endLine": 560,
+          "snippet": "console.log(`\\x1b[90m   └─ Auth coverage: ${Math.round(coverageRaw.authCoverage * 100)}%\\x1b[0m`)",
+          "label": "Sensitive data logged: authCoverage"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Remove sensitive data from log statements. Only log non-sensitive identifiers like user IDs, timestamps, or action types.",
+        "patch": "// Instead of:\nconsole.log(\"Login:\", { email, password });\n\n// Do:\nconsole.log(\"Login attempt:\", { email, timestamp: Date.now() });"
+      },
+      "links": {
+        "cwe": "https://cwe.mitre.org/data/definitions/532.html",
+        "owasp": "https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/"
+      },
+      "fingerprint": "f9a5cc9952ac8f3b"
+    },
+    {
+      "id": "vc-config-001-94d22a6e",
+      "severity": "high",
+      "confidence": 0.85,
+      "category": "config",
+      "ruleId": "VC-CONFIG-001",
+      "title": "Undocumented environment variable: STRIPE_SECRET_KEY",
+      "description": "The environment variable \"STRIPE_SECRET_KEY\" is used but no .env.example file exists. Consider creating one to document required configuration.",
+      "evidence": [
+        {
+          "file": "src/commands/demo-artifact.ts",
+          "startLine": 171,
+          "endLine": 171,
+          "snippet": "patch: `const STRIPE_KEY = process.env.STRIPE_SECRET_KEY;",
+          "label": "Usage of process.env.STRIPE_SECRET_KEY"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Create a .env.example file and add \"STRIPE_SECRET_KEY=\" with documentation."
+      },
+      "fingerprint": "94d22a6e49d6db06"
+    },
+    {
+      "id": "vc-config-001-99eb413e",
+      "severity": "high",
+      "confidence": 0.85,
+      "category": "config",
+      "ruleId": "VC-CONFIG-001",
+      "title": "Undocumented environment variable: SESSION_SECRET",
+      "description": "The environment variable \"SESSION_SECRET\" is used but no .env.example file exists. Consider creating one to document required configuration.",
+      "evidence": [
+        {
+          "file": "src/commands/demo-artifact.ts",
+          "startLine": 259,
+          "endLine": 259,
+          "snippet": "secret: process.env.SESSION_SECRET,",
+          "label": "Usage of process.env.SESSION_SECRET"
+        },
+        {
+          "file": "src/commands/demo-artifact.ts",
+          "startLine": 270,
+          "endLine": 270,
+          "snippet": "secret: process.env.SESSION_SECRET,",
+          "label": "Usage of process.env.SESSION_SECRET"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Create a .env.example file and add \"SESSION_SECRET=\" with documentation."
+      },
+      "fingerprint": "99eb413ebcbbc4fc"
+    },
+    {
+      "id": "vc-config-001-eadb5889",
+      "severity": "medium",
+      "confidence": 0.85,
+      "category": "config",
+      "ruleId": "VC-CONFIG-001",
+      "title": "Undocumented environment variable: NODE_ENV",
+      "description": "The environment variable \"NODE_ENV\" is used but no .env.example file exists. Consider creating one to document required configuration.",
+      "evidence": [
+        {
+          "file": "src/commands/demo-artifact.ts",
+          "startLine": 272,
+          "endLine": 272,
+          "snippet": "secure: process.env.NODE_ENV === \"production\",",
+          "label": "Usage of process.env.NODE_ENV"
+        },
+        {
+          "file": "src/scanners/privacy/debug-flags.ts",
+          "startLine": 119,
+          "endLine": 119,
+          "snippet": "const isDev = process.env.NODE_ENV === 'development';",
+          "label": "Usage of process.env.NODE_ENV"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Create a .env.example file and add \"NODE_ENV=\" with documentation."
+      },
+      "fingerprint": "eadb5889cbb00a27"
+    },
+    {
+      "id": "vc-config-001-76921931",
+      "severity": "medium",
+      "confidence": 0.85,
+      "category": "config",
+      "ruleId": "VC-CONFIG-001",
+      "title": "Undocumented environment variable: VARIABLE_NAME",
+      "description": "The environment variable \"VARIABLE_NAME\" is used but no .env.example file exists. Consider creating one to document required configuration.",
+      "evidence": [
+        {
+          "file": "src/scanners/config/undocumented-env.ts",
+          "startLine": 14,
+          "endLine": 14,
+          "snippet": "* Regex to find process.env.VARIABLE_NAME usage",
+          "label": "Usage of process.env.VARIABLE_NAME"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Create a .env.example file and add \"VARIABLE_NAME=\" with documentation."
+      },
+      "fingerprint": "7692193156cbbb5b"
+    },
+    {
+      "id": "vc-config-001-4f6765d1",
+      "severity": "medium",
+      "confidence": 0.85,
+      "category": "config",
+      "ruleId": "VC-CONFIG-001",
+      "title": "Undocumented environment variable: VAR_NAME",
+      "description": "The environment variable \"VAR_NAME\" is used but no .env.example file exists. Consider creating one to document required configuration.",
+      "evidence": [
+        {
+          "file": "src/scanners/config/undocumented-env.ts",
+          "startLine": 69,
+          "endLine": 69,
+          "snippet": "// Find dot notation: process.env.VAR_NAME",
+          "label": "Usage of process.env.VAR_NAME"
+        },
+        {
+          "file": "src/scanners/config/undocumented-env.ts",
+          "startLine": 86,
+          "endLine": 86,
+          "snippet": "// Find bracket notation: process.env[\"VAR_NAME\"]",
+          "label": "Usage of process.env.VAR_NAME"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Create a .env.example file and add \"VAR_NAME=\" with documentation."
+      },
+      "fingerprint": "4f6765d1c940951d"
+    },
+    {
+      "id": "vc-config-001-570420a9",
+      "severity": "medium",
+      "confidence": 0.85,
+      "category": "config",
+      "ruleId": "VC-CONFIG-001",
+      "title": "Undocumented environment variable: VARIABLE",
+      "description": "The environment variable \"VARIABLE\" is used but no .env.example file exists. Consider creating one to document required configuration.",
+      "evidence": [
+        {
+          "file": "src/scanners/config/undocumented-env.ts",
+          "startLine": 20,
+          "endLine": 20,
+          "snippet": "* Regex to find process.env[\"VARIABLE\"] or process.env['VARIABLE'] usage",
+          "label": "Usage of process.env.VARIABLE"
+        },
+        {
+          "file": "src/scanners/config/undocumented-env.ts",
+          "startLine": 20,
+          "endLine": 20,
+          "snippet": "* Regex to find process.env[\"VARIABLE\"] or process.env['VARIABLE'] usage",
+          "label": "Usage of process.env.VARIABLE"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Create a .env.example file and add \"VARIABLE=\" with documentation."
+      },
+      "fingerprint": "570420a92b50fa35"
+    },
+    {
+      "id": "vc-config-001-219bc299",
+      "severity": "high",
+      "confidence": 0.85,
+      "category": "config",
+      "ruleId": "VC-CONFIG-001",
+      "title": "Undocumented environment variable: JWT_SECRET",
+      "description": "The environment variable \"JWT_SECRET\" is used but no .env.example file exists. Consider creating one to document required configuration.",
+      "evidence": [
+        {
+          "file": "src/scanners/crypto/jwt-decode-unverified.ts",
+          "startLine": 74,
+          "endLine": 74,
+          "snippet": "const payload = jwt.verify(token, process.env.JWT_SECRET);",
+          "label": "Usage of process.env.JWT_SECRET"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Create a .env.example file and add \"JWT_SECRET=\" with documentation."
+      },
+      "fingerprint": "219bc299b3a71685"
+    },
+    {
+      "id": "vc-config-001-b9cfcc96",
+      "severity": "medium",
+      "confidence": 0.85,
+      "category": "config",
+      "ruleId": "VC-CONFIG-001",
+      "title": "Undocumented environment variable: VAR",
+      "description": "The environment variable \"VAR\" is used but no .env.example file exists. Consider creating one to document required configuration.",
+      "evidence": [
+        {
+          "file": "src/scanners/helpers/ast-helpers.ts",
+          "startLine": 412,
+          "endLine": 412,
+          "snippet": "// Check for process.env.VAR pattern on left",
+          "label": "Usage of process.env.VAR"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Create a .env.example file and add \"VAR=\" with documentation."
+      },
+      "fingerprint": "b9cfcc966d9f8600"
+    },
+    {
+      "id": "vc-config-001-e487b843",
+      "severity": "medium",
+      "confidence": 0.85,
+      "category": "config",
+      "ruleId": "VC-CONFIG-001",
+      "title": "Undocumented environment variable: DEBUG",
+      "description": "The environment variable \"DEBUG\" is used but no .env.example file exists. Consider creating one to document required configuration.",
+      "evidence": [
+        {
+          "file": "src/scanners/privacy/debug-flags.ts",
+          "startLine": 126,
+          "endLine": 126,
+          "snippet": "debug: process.env.DEBUG === 'true',",
+          "label": "Usage of process.env.DEBUG"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Create a .env.example file and add \"DEBUG=\" with documentation."
+      },
+      "fingerprint": "e487b84364236fd8"
+    },
+    {
+      "id": "vc-config-002-7526892f",
+      "ruleId": "VC-CONFIG-002",
+      "title": "Insecure default for RULE_AUTH_INFO_001",
+      "description": "The secret RULE_AUTH_INFO_001 has a hardcoded fallback value \"VC-AUTH-INFO-001\". This is a critical security issue as the fallback value may be used in production if the environment variable is not set, potentially exposing a weak or predictable secret.",
+      "severity": "critical",
+      "confidence": 0.95,
+      "category": "config",
+      "evidence": [
+        {
+          "file": "src/scanners/auth/middleware-gap.ts",
+          "startLine": 7,
+          "endLine": 7,
+          "snippet": "RULE_AUTH_INFO_001 = \"VC-AUTH-INFO-001\"",
+          "label": "Critical secret with hardcoded fallback: RULE_AUTH_INFO_001"
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Remove the hardcoded fallback and require the environment variable to be explicitly set. Add validation at startup to fail fast if required secrets are missing.",
+        "patch": "// Instead of:\nconst secret = process.env.RULE_AUTH_INFO_001 || \"hardcoded\";\n\n// Do:\nconst secret = process.env.RULE_AUTH_INFO_001;\nif (!secret) {\n  throw new Error(\"RULE_AUTH_INFO_001 environment variable is required\");\n}"
+      },
+      "links": {
+        "cwe": "https://cwe.mitre.org/data/definitions/798.html",
+        "owasp": "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/"
+      },
+      "fingerprint": "7526892fcc9d98ae"
+    },
+    {
+      "id": "vc-crypto-001-8855fddb",
+      "ruleId": "VC-CRYPTO-001",
+      "title": "Insecure random for scanMathRandomTokens",
+      "description": "Math.random() is used to generate \"scanMathRandomTokens\" which appears to be a security-sensitive value. Math.random() is not cryptographically secure - its output can be predicted if an attacker knows the internal state. This makes tokens, session IDs, or reset codes guessable.",
+      "severity": "high",
+      "confidence": 0.85,
+      "category": "crypto",
+      "evidence": [
+        {
+          "file": "src/scanners/crypto/math-random-tokens.ts",
+          "startLine": 49,
+          "endLine": 49,
+          "snippet": "findings.push({\n        id: generateFindingId({\n          ruleId: RULE_ID,\n          file: relPath,\n          symbol: usage.variableName,\n          st",
+          "label": "Math.random used for \"scanMathRandomTokens\""
+        }
+      ],
+      "remediation": {
+        "recommendedFix": "Use crypto.randomBytes() or crypto.randomUUID() for security-sensitive random values.",
+        "patch": "import { randomBytes, randomUUID } from 'crypto';\n\n// For tokens/keys (hex string):\nconst token = randomBytes(32).toString('hex');\n\n// For session IDs (URL-safe base64):\nconst sessionId = randomBytes(24).toString('base64url');\n\n// For UUIDs:\nconst id = randomUUID();\n\n// For numbers in a range (e.g., 6-digit code):\nconst code = randomBytes(4).readUInt32BE() % 1000000;\nconst resetCode = code.toString().padStart(6, '0');"
+      },
+      "links": {
+        "cwe": "https://cwe.mitre.org/data/definitions/338.html",
+        "owasp": "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html"
+      },
+      "fingerprint": "8855fddb3a17c211"
+    }
+  ],
+  "metrics": {
+    "filesScanned": 59,
+    "linesOfCode": 0,
+    "scanDurationMs": 3084,
+    "rulesExecuted": 26,
+    "authCoverage": {
+      "totalStateChanging": 0,
+      "protectedCount": 0,
+      "unprotectedCount": 0
+    },
+    "validationCoverage": {
+      "totalStateChanging": 0,
+      "validatedCount": 0
+    },
+    "middlewareCoverage": {
+      "totalApiRoutes": 0,
+      "coveredApiRoutes": 0
+    }
+  },
+  "routeMap": {
+    "routes": []
+  },
+  "middlewareMap": {
+    "matcher": [],
+    "coverage": []
+  },
+  "intentMap": {
+    "intents": [
+      {
+        "intentId": "5fda4a23b1dd",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/evaluate.ts",
+          "startLine": 39,
+          "endLine": 39
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Load and validate scan artifact from file */"
+      },
+      {
+        "intentId": "bcd7d96c754d",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/evaluate.ts",
+          "startLine": 55,
+          "endLine": 55
+        },
+        "strength": "strong",
+        "textEvidence": "// Validate the artifact"
+      },
+      {
+        "intentId": "be7c1e78b5b6",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/evaluate.ts",
+          "startLine": 59,
+          "endLine": 59
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Load and validate waivers file */"
+      },
+      {
+        "intentId": "cd89db255201",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/evaluate.ts",
+          "startLine": 83,
+          "endLine": 83
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Load and validate policy config file */"
+      },
+      {
+        "intentId": "8b55b56c4792",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/evaluate.ts",
+          "startLine": 325,
+          "endLine": 325
+        },
+        "strength": "strong",
+        "textEvidence": "// Validate profile"
+      },
+      {
+        "intentId": "f869dd3ed2bf",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/explain.ts",
+          "startLine": 228,
+          "endLine": 228
+        },
+        "strength": "strong",
+        "textEvidence": "// Validate artifact"
+      },
+      {
+        "intentId": "281e949831b8",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/intent.ts",
+          "startLine": 158,
+          "endLine": 158
+        },
+        "strength": "medium",
+        "textEvidence": "// Convert proofTraces Map to schema format"
+      },
+      {
+        "intentId": "a780c13836f9",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/intent.ts",
+          "startLine": 176,
+          "endLine": 176
+        },
+        "strength": "medium",
+        "textEvidence": "// Build middleware coverage"
+      },
+      {
+        "intentId": "4650e135c7b8",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/scan.ts",
+          "startLine": 392,
+          "endLine": 392
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Validate format option */"
+      },
+      {
+        "intentId": "0c1ef435dfb4",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/scan.ts",
+          "startLine": 404,
+          "endLine": 404
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Validate fail-on option */"
+      },
+      {
+        "intentId": "78dedb24f34e",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/scan.ts",
+          "startLine": 425,
+          "endLine": 425
+        },
+        "strength": "strong",
+        "textEvidence": "// Validate options"
+      },
+      {
+        "intentId": "ee059926ca69",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/scan.ts",
+          "startLine": 477,
+          "endLine": 477
+        },
+        "strength": "medium",
+        "textEvidence": "// Convert to schema format"
+      },
+      {
+        "intentId": "741d25a70637",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/scan.ts",
+          "startLine": 495,
+          "endLine": 495
+        },
+        "strength": "medium",
+        "textEvidence": "// Build middleware coverage"
+      },
+      {
+        "intentId": "28044036b712",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/scan.ts",
+          "startLine": 576,
+          "endLine": 576
+        },
+        "strength": "strong",
+        "textEvidence": "// Validate artifact before writing"
+      },
+      {
+        "intentId": "8399354fb48a",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/waivers.ts",
+          "startLine": 89,
+          "endLine": 89
+        },
+        "strength": "strong",
+        "textEvidence": "// Validate options"
+      },
+      {
+        "intentId": "831ce93269e6",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/commands/waivers.ts",
+          "startLine": 100,
+          "endLine": 100
+        },
+        "strength": "strong",
+        "textEvidence": "// Validate expiry date if provided"
+      },
+      {
+        "intentId": "5371ad548a0e",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/intent-miner.ts",
+          "startLine": 30,
+          "endLine": 30
+        },
+        "strength": "strong",
+        "textEvidence": "// Auth patterns"
+      },
+      {
+        "intentId": "9785b22b821d",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/intent-miner.ts",
+          "startLine": 35,
+          "endLine": 35
+        },
+        "strength": "strong",
+        "textEvidence": "// Validation patterns"
+      },
+      {
+        "intentId": "3a06bf9ec963",
+        "type": "CSRF_ENABLED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/intent-miner.ts",
+          "startLine": 40,
+          "endLine": 40
+        },
+        "strength": "strong",
+        "textEvidence": "// CSRF patterns"
+      },
+      {
+        "intentId": "7212572ccd99",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/intent-miner.ts",
+          "startLine": 49,
+          "endLine": 49
+        },
+        "strength": "medium",
+        "textEvidence": "// Middleware patterns"
+      },
+      {
+        "intentId": "c90c7dde44c7",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 1,
+          "endLine": 1
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Phase 3: Cross-file Proof Trace Builder * * Lightweight call-graph tracing for Next.js App ..."
+      },
+      {
+        "intentId": "a840e58cd1d7",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 103,
+          "endLine": 103
+        },
+        "strength": "medium",
+        "textEvidence": "/** * Build middleware map from scan context */"
+      },
+      {
+        "intentId": "2e5a5f3692a3",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 148,
+          "endLine": 148
+        },
+        "strength": "medium",
+        "textEvidence": "/** * Extract matcher patterns from middleware config */"
+      },
+      {
+        "intentId": "afa14982ab38",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 173,
+          "endLine": 173
+        },
+        "strength": "medium",
+        "textEvidence": "/** * Check if a route path is covered by middleware matchers */"
+      },
+      {
+        "intentId": "759e70b26bc1",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 202,
+          "endLine": 202
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Trace auth/validation through a handler and its imports */"
+      },
+      {
+        "intentId": "9f339bfda82c",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 240,
+          "endLine": 240
+        },
+        "strength": "strong",
+        "textEvidence": "// Check handler directly for auth"
+      },
+      {
+        "intentId": "d5a475ceefda",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 251,
+          "endLine": 251
+        },
+        "strength": "strong",
+        "textEvidence": "// Check handler directly for validation"
+      },
+      {
+        "intentId": "689428179782",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 290,
+          "endLine": 290
+        },
+        "strength": "medium",
+        "textEvidence": "// Check middleware coverage"
+      },
+      {
+        "intentId": "f43bb036435b",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 407,
+          "endLine": 407
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Trace an imported module for auth/validation */"
+      },
+      {
+        "intentId": "3804e4e95e32",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 434,
+          "endLine": 434
+        },
+        "strength": "strong",
+        "textEvidence": "// Look for auth patterns in exported functions"
+      },
+      {
+        "intentId": "1438949d0599",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 458,
+          "endLine": 458
+        },
+        "strength": "strong",
+        "textEvidence": "// Look for validation patterns"
+      },
+      {
+        "intentId": "5cc692dca35a",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 534,
+          "endLine": 534
+        },
+        "strength": "strong",
+        "textEvidence": "// Auth coverage: state-changing routes with auth proven"
+      },
+      {
+        "intentId": "b13f67efcf77",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 545,
+          "endLine": 545
+        },
+        "strength": "strong",
+        "textEvidence": "// Validation coverage: POST/PUT/PATCH routes with validation proven"
+      },
+      {
+        "intentId": "10fb661e2a36",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "global",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 557,
+          "endLine": 557
+        },
+        "strength": "medium",
+        "textEvidence": "// Middleware coverage: all routes covered by middleware"
+      },
+      {
+        "intentId": "b4caca146c68",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "identifier",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 296,
+          "endLine": 296
+        },
+        "strength": "medium",
+        "textEvidence": "variable: middleware"
+      },
+      {
+        "intentId": "a23e3a18f481",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "identifier",
+        "location": {
+          "file": "src/phase3/proof-trace-builder.ts",
+          "startLine": 468,
+          "endLine": 468
+        },
+        "strength": "strong",
+        "textEvidence": "variable: validation"
+      },
+      {
+        "intentId": "54a9096ea293",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/index.ts",
+          "startLine": 73,
+          "endLine": 73
+        },
+        "strength": "strong",
+        "textEvidence": "// Auth pack"
+      },
+      {
+        "intentId": "ab93a50a376b",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/index.ts",
+          "startLine": 77,
+          "endLine": 77
+        },
+        "strength": "strong",
+        "textEvidence": "// Validation pack"
+      },
+      {
+        "intentId": "4d36595208dc",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/index.ts",
+          "startLine": 99,
+          "endLine": 99
+        },
+        "strength": "strong",
+        "textEvidence": "// Auth pack (Phase 3)"
+      },
+      {
+        "intentId": "b4f173ed6a88",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/index.ts",
+          "startLine": 101,
+          "endLine": 101
+        },
+        "strength": "medium",
+        "textEvidence": "// Middleware pack"
+      },
+      {
+        "intentId": "591360ece4a8",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 16,
+          "endLine": 16
+        },
+        "strength": "strong",
+        "textEvidence": "/** Whether next-auth is present */"
+      },
+      {
+        "intentId": "f64edef61379",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 34,
+          "endLine": 34
+        },
+        "strength": "medium",
+        "textEvidence": "/** Next.js middleware file path if exists */"
+      },
+      {
+        "intentId": "7a5bc439b27e",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 55,
+          "endLine": 55
+        },
+        "strength": "strong",
+        "textEvidence": "/** Check if a function contains auth checks */"
+      },
+      {
+        "intentId": "49a12fb23293",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 61,
+          "endLine": 61
+        },
+        "strength": "strong",
+        "textEvidence": "/** Find validation usage (zod, yup, joi) */"
+      },
+      {
+        "intentId": "d8ca9255fb3f",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 111,
+          "endLine": 111
+        },
+        "strength": "strong",
+        "textEvidence": "/** Check if file contains validation schemas */"
+      },
+      {
+        "intentId": "b1009a82f9ea",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 138,
+          "endLine": 138
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Validation usage information */"
+      },
+      {
+        "intentId": "524bec869189",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 305,
+          "endLine": 305
+        },
+        "strength": "medium",
+        "textEvidence": "/** * Prisma schema parsed info */"
+      },
+      {
+        "intentId": "b90dd68c028a",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 343,
+          "endLine": 343
+        },
+        "strength": "medium",
+        "textEvidence": "/** Prisma schema information if available */"
+      },
+      {
+        "intentId": "bc40e4408dc1",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 409,
+          "endLine": 409
+        },
+        "strength": "medium",
+        "textEvidence": "/** * Middleware matcher information */"
+      },
+      {
+        "intentId": "03bbb107f569",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 423,
+          "endLine": 423
+        },
+        "strength": "medium",
+        "textEvidence": "/** * Claim types for intent mining (must match schema) */"
+      },
+      {
+        "intentId": "0fe31424aef4",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 435,
+          "endLine": 435
+        },
+        "strength": "medium",
+        "textEvidence": "/** * Claim sources (must match schema) */"
+      },
+      {
+        "intentId": "d6f3b89d3355",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 446,
+          "endLine": 446
+        },
+        "strength": "medium",
+        "textEvidence": "/** * Claim scope (must match schema) */"
+      },
+      {
+        "intentId": "2a5e4fd7479b",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 451,
+          "endLine": 451
+        },
+        "strength": "medium",
+        "textEvidence": "/** * Claim strength (must match schema) */"
+      },
+      {
+        "intentId": "5934a6dee903",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 502,
+          "endLine": 502
+        },
+        "strength": "strong",
+        "textEvidence": "/** Whether auth was proven */"
+      },
+      {
+        "intentId": "a4cf14a3577e",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 504,
+          "endLine": 504
+        },
+        "strength": "strong",
+        "textEvidence": "/** Whether validation was proven */"
+      },
+      {
+        "intentId": "292fc7a8be46",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 506,
+          "endLine": 506
+        },
+        "strength": "medium",
+        "textEvidence": "/** Middleware coverage status */"
+      },
+      {
+        "intentId": "cd27ea4d1ff5",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 516,
+          "endLine": 516
+        },
+        "strength": "strong",
+        "textEvidence": "/** Auth coverage: routes with auth / total state-changing routes */"
+      },
+      {
+        "intentId": "9e5292fb43cf",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 518,
+          "endLine": 518
+        },
+        "strength": "strong",
+        "textEvidence": "/** Validation coverage: routes with validation / total routes with body */"
+      },
+      {
+        "intentId": "e6df3094173d",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 520,
+          "endLine": 520
+        },
+        "strength": "medium",
+        "textEvidence": "/** Middleware coverage: routes covered by middleware / total routes */"
+      },
+      {
+        "intentId": "b628ff20353e",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 530,
+          "endLine": 530
+        },
+        "strength": "medium",
+        "textEvidence": "/** Middleware map */"
+      },
+      {
+        "intentId": "befafb3b603e",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 143,
+          "endLine": 143
+        },
+        "strength": "strong",
+        "textEvidence": "// parse, validate, etc."
+      },
+      {
+        "intentId": "ff4ba208645f",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/types.ts",
+          "startLine": 169,
+          "endLine": 169
+        },
+        "strength": "strong",
+        "textEvidence": "// JWT, SESSION, AUTH secrets"
+      },
+      {
+        "intentId": "2194c278f81c",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/utils/sarif-formatter.ts",
+          "startLine": 11,
+          "endLine": 11
+        },
+        "strength": "medium",
+        "textEvidence": "/** * SARIF 2.1.0 schema types */"
+      },
+      {
+        "intentId": "3c2ff297df90",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/utils/sarif-formatter.ts",
+          "startLine": 250,
+          "endLine": 250
+        },
+        "strength": "medium",
+        "textEvidence": "//raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json\","
+      },
+      {
+        "intentId": "d43daee2733a",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/auth-by-ui-server-gap.ts",
+          "startLine": 1,
+          "endLine": 1
+        },
+        "strength": "strong",
+        "textEvidence": "/** * VC-AUTH-010: Auth-by-UI with Server Gap * * Detects patterns where authentication appears t..."
+      },
+      {
+        "intentId": "62ef51ecff8a",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/auth-by-ui-server-gap.ts",
+          "startLine": 22,
+          "endLine": 22
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Client-side auth patterns that suggest UI-level protection */"
+      },
+      {
+        "intentId": "1d5201f20f38",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/auth-by-ui-server-gap.ts",
+          "startLine": 35,
+          "endLine": 35
+        },
+        "strength": "strong",
+        "textEvidence": "// Conditional rendering based on auth"
+      },
+      {
+        "intentId": "17fb0d898bb5",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/auth-by-ui-server-gap.ts",
+          "startLine": 40,
+          "endLine": 40
+        },
+        "strength": "strong",
+        "textEvidence": "// Auth redirects in client components"
+      },
+      {
+        "intentId": "e5906a4f6d04",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/auth-by-ui-server-gap.ts",
+          "startLine": 74,
+          "endLine": 74
+        },
+        "strength": "strong",
+        "textEvidence": "// Find state-changing routes without auth"
+      },
+      {
+        "intentId": "40d8f1f3282d",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/auth-by-ui-server-gap.ts",
+          "startLine": 87,
+          "endLine": 87
+        },
+        "strength": "strong",
+        "textEvidence": "// Scan client components for UI-level auth patterns"
+      },
+      {
+        "intentId": "982cb23a040e",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/auth-by-ui-server-gap.ts",
+          "startLine": 102,
+          "endLine": 102
+        },
+        "strength": "strong",
+        "textEvidence": "// Check for client-side auth patterns"
+      },
+      {
+        "intentId": "cc1b51b0e243",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/auth-by-ui-server-gap.ts",
+          "startLine": 275,
+          "endLine": 275
+        },
+        "strength": "strong",
+        "textEvidence": "// Find the first client auth pattern"
+      },
+      {
+        "intentId": "76994179900e",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/comment-claim-unproven.ts",
+          "startLine": 86,
+          "endLine": 86
+        },
+        "strength": "strong",
+        "textEvidence": "// Skip claims without route association for auth/validation"
+      },
+      {
+        "intentId": "d183158a9892",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/index.ts",
+          "startLine": 39,
+          "endLine": 39
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Phase 3 Auth Pack extension */"
+      },
+      {
+        "intentId": "45b31b0dd195",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/middleware-assumed-not-matching.ts",
+          "startLine": 1,
+          "endLine": 1
+        },
+        "strength": "medium",
+        "textEvidence": "/** * VC-HALL-011: Middleware Assumed But Not Matching * * Detects routes that appear to expect m..."
+      },
+      {
+        "intentId": "c34cdeb2e290",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/middleware-assumed-not-matching.ts",
+          "startLine": 24,
+          "endLine": 24
+        },
+        "strength": "medium",
+        "textEvidence": "/** * Signals that a route expects middleware protection */"
+      },
+      {
+        "intentId": "9b4dd0ed073e",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/middleware-assumed-not-matching.ts",
+          "startLine": 34,
+          "endLine": 34
+        },
+        "strength": "medium",
+        "textEvidence": "// Code patterns that suggest middleware dependency"
+      },
+      {
+        "intentId": "1fe2a4690d61",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/middleware-assumed-not-matching.ts",
+          "startLine": 49,
+          "endLine": 49
+        },
+        "strength": "medium",
+        "textEvidence": "// If no middleware file exists, skip this scanner"
+      },
+      {
+        "intentId": "75d3fe078cdb",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/middleware-assumed-not-matching.ts",
+          "startLine": 57,
+          "endLine": 57
+        },
+        "strength": "medium",
+        "textEvidence": "// Find routes that expect middleware but aren't covered"
+      },
+      {
+        "intentId": "28848a26f888",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/middleware-assumed-not-matching.ts",
+          "startLine": 63,
+          "endLine": 63
+        },
+        "strength": "medium",
+        "textEvidence": "// Check if this route has signals expecting middleware"
+      },
+      {
+        "intentId": "8a48d75ca777",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/middleware-assumed-not-matching.ts",
+          "startLine": 125,
+          "endLine": 125
+        },
+        "strength": "medium",
+        "textEvidence": "// Check intent claims for middleware protection"
+      },
+      {
+        "intentId": "9590e374de3d",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/middleware-assumed-not-matching.ts",
+          "startLine": 145,
+          "endLine": 145
+        },
+        "strength": "medium",
+        "textEvidence": "// Check source file for middleware expectation signals"
+      },
+      {
+        "intentId": "1fe7d47dc9f1",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/middleware-assumed-not-matching.ts",
+          "startLine": 172,
+          "endLine": 172
+        },
+        "strength": "strong",
+        "textEvidence": "// Check if auth claims exist but no auth check in handler"
+      },
+      {
+        "intentId": "372bead09fde",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/middleware-assumed-not-matching.ts",
+          "startLine": 181,
+          "endLine": 181
+        },
+        "strength": "strong",
+        "textEvidence": "// Check if the handler has its own auth check"
+      },
+      {
+        "intentId": "d2d5dce30a30",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/middleware-assumed-not-matching.ts",
+          "startLine": 186,
+          "endLine": 186
+        },
+        "strength": "strong",
+        "textEvidence": "// Auth is claimed but not in handler - might expect middleware"
+      },
+      {
+        "intentId": "891c2d3c1479",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/validation-claimed-missing.ts",
+          "startLine": 1,
+          "endLine": 1
+        },
+        "strength": "strong",
+        "textEvidence": "/** * VC-HALL-012: Validation Claimed But Missing/Ignored * * Detects routes where validation is ..."
+      },
+      {
+        "intentId": "50e8e474c604",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/validation-claimed-missing.ts",
+          "startLine": 32,
+          "endLine": 32
+        },
+        "strength": "strong",
+        "textEvidence": "// Find validation claims"
+      },
+      {
+        "intentId": "b7af8ac95afa",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/validation-claimed-missing.ts",
+          "startLine": 45,
+          "endLine": 45
+        },
+        "strength": "strong",
+        "textEvidence": "// Check each file with validation claims"
+      },
+      {
+        "intentId": "1c147d250ad4",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/validation-claimed-missing.ts",
+          "startLine": 58,
+          "endLine": 58
+        },
+        "strength": "strong",
+        "textEvidence": "// Check if this handler should have validation"
+      },
+      {
+        "intentId": "8f9b6f386248",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/validation-claimed-missing.ts",
+          "startLine": 70,
+          "endLine": 70
+        },
+        "strength": "strong",
+        "textEvidence": "// Check actual validation status"
+      },
+      {
+        "intentId": "89ab8bf4f137",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/validation-claimed-missing.ts",
+          "startLine": 73,
+          "endLine": 73
+        },
+        "strength": "strong",
+        "textEvidence": "// Case 1: No validation at all despite claims"
+      },
+      {
+        "intentId": "f83288ddf7ff",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/validation-claimed-missing.ts",
+          "startLine": 84,
+          "endLine": 84
+        },
+        "strength": "strong",
+        "textEvidence": "// Case 2: Validation exists but result not assigned"
+      },
+      {
+        "intentId": "bd13c24844b4",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/validation-claimed-missing.ts",
+          "startLine": 101,
+          "endLine": 101
+        },
+        "strength": "strong",
+        "textEvidence": "// Case 3: Validation result assigned but raw body still used"
+      },
+      {
+        "intentId": "6147d9090769",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/validation-claimed-missing.ts",
+          "startLine": 119,
+          "endLine": 119
+        },
+        "strength": "strong",
+        "textEvidence": "// Also check for validation imports that are never used"
+      },
+      {
+        "intentId": "1d5229bf5519",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/validation-claimed-missing.ts",
+          "startLine": 219,
+          "endLine": 219
+        },
+        "strength": "strong",
+        "textEvidence": "// Find import-based validation claims"
+      },
+      {
+        "intentId": "dddbc6678f34",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/validation-claimed-missing.ts",
+          "startLine": 230,
+          "endLine": 230
+        },
+        "strength": "strong",
+        "textEvidence": "// Check if validation schemas/methods are actually defined and used"
+      },
+      {
+        "intentId": "909e9555f7c2",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/phase3/scanners/validation-claimed-missing.ts",
+          "startLine": 234,
+          "endLine": 234
+        },
+        "strength": "strong",
+        "textEvidence": "// Validation library imported but no schemas defined"
+      },
+      {
+        "intentId": "855c9ecb1992",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/abuse/compute-abuse.ts",
+          "startLine": 157,
+          "endLine": 157
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Check for auth enforcement patterns */"
+      },
+      {
+        "intentId": "66d31493c960",
+        "type": "RATE_LIMITED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/abuse/compute-abuse.ts",
+          "startLine": 164,
+          "endLine": 164
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Check for rate limit patterns */"
+      },
+      {
+        "intentId": "a1130085a092",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/abuse/compute-abuse.ts",
+          "startLine": 204,
+          "endLine": 204
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Check for input validation patterns */"
+      },
+      {
+        "intentId": "8e3ee8a114f9",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/abuse/compute-abuse.ts",
+          "startLine": 363,
+          "endLine": 363
+        },
+        "strength": "strong",
+        "textEvidence": "/** * VC-ABUSE-001 to VC-ABUSE-004: Compute Abuse Detection * * Detects compute-intensive endpoin..."
+      },
+      {
+        "intentId": "1ac26e141daf",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/abuse/compute-abuse.ts",
+          "startLine": 585,
+          "endLine": 585
+        },
+        "strength": "strong",
+        "textEvidence": "// Add input validation"
+      },
+      {
+        "intentId": "3d20137ef5af",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/auth/middleware-gap.ts",
+          "startLine": 9,
+          "endLine": 9
+        },
+        "strength": "medium",
+        "textEvidence": "/** * Parse matcher config from middleware file * * Looks for patterns like: * - export const con..."
+      },
+      {
+        "intentId": "58b2857d77a6",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/auth/middleware-gap.ts",
+          "startLine": 82,
+          "endLine": 82
+        },
+        "strength": "strong",
+        "textEvidence": "/** * VC-MW-001: Middleware matcher gap for /api coverage * VC-AUTH-INFO-001: Missing middleware ..."
+      },
+      {
+        "intentId": "4d70eae56a92",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/auth/middleware-gap.ts",
+          "startLine": 106,
+          "endLine": 106
+        },
+        "strength": "medium",
+        "textEvidence": "// No middleware file exists"
+      },
+      {
+        "intentId": "1332013486f1",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/auth/middleware-gap.ts",
+          "startLine": 108,
+          "endLine": 108
+        },
+        "strength": "strong",
+        "textEvidence": "// Has next-auth but no middleware - likely missing protection"
+      },
+      {
+        "intentId": "61ef14c30cb5",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/auth/middleware-gap.ts",
+          "startLine": 169,
+          "endLine": 169
+        },
+        "strength": "medium",
+        "textEvidence": "// Middleware exists - check if it covers API routes"
+      },
+      {
+        "intentId": "6892e72a6c9a",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "global",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/auth/middleware-gap.ts",
+          "startLine": 177,
+          "endLine": 177
+        },
+        "strength": "medium",
+        "textEvidence": "// If no matcher config, middleware applies to all routes (except static)"
+      },
+      {
+        "intentId": "dc7bcfa1b05a",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/auth/middleware-gap.ts",
+          "startLine": 145,
+          "endLine": 145
+        },
+        "strength": "strong",
+        "textEvidence": "//next-auth.js.org/configuration/nextjs#middleware\","
+      },
+      {
+        "intentId": "36a224dfacaa",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/auth/middleware-gap.ts",
+          "startLine": 146,
+          "endLine": 146
+        },
+        "strength": "medium",
+        "textEvidence": "// middleware.ts"
+      },
+      {
+        "intentId": "833228ee2362",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/auth/unprotected-api-route.ts",
+          "startLine": 39,
+          "endLine": 39
+        },
+        "strength": "strong",
+        "textEvidence": "/** * VC-AUTH-001: Unprotected state-changing API route * * Identifies Next.js App Router route h..."
+      },
+      {
+        "intentId": "85244d733d5a",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/auth/unprotected-api-route.ts",
+          "startLine": 71,
+          "endLine": 71
+        },
+        "strength": "strong",
+        "textEvidence": "// Check for auth"
+      },
+      {
+        "intentId": "6f32e649783a",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/ast-helpers.ts",
+          "startLine": 25,
+          "endLine": 25
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Auth check function/method names to look for */"
+      },
+      {
+        "intentId": "0a9407d65d16",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/ast-helpers.ts",
+          "startLine": 44,
+          "endLine": 44
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Prisma operations that are dangerous without auth */"
+      },
+      {
+        "intentId": "e9d041085c2c",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/ast-helpers.ts",
+          "startLine": 183,
+          "endLine": 183
+        },
+        "strength": "strong",
+        "textEvidence": "// Check for auth function calls"
+      },
+      {
+        "intentId": "07065f195157",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/ast-helpers.ts",
+          "startLine": 188,
+          "endLine": 188
+        },
+        "strength": "strong",
+        "textEvidence": "// Check for await auth() pattern"
+      },
+      {
+        "intentId": "c6cc0f8fa6b2",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/ast-helpers.ts",
+          "startLine": 268,
+          "endLine": 268
+        },
+        "strength": "strong",
+        "textEvidence": "// Track if raw body is used after validation"
+      },
+      {
+        "intentId": "2878fe2b2d82",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/ast-helpers.ts",
+          "startLine": 274,
+          "endLine": 274
+        },
+        "strength": "medium",
+        "textEvidence": "// Zod: schema.parse(), schema.safeParse()"
+      },
+      {
+        "intentId": "7e4bd0126309",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/ast-helpers.ts",
+          "startLine": 301,
+          "endLine": 301
+        },
+        "strength": "strong",
+        "textEvidence": "// Yup: schema.validate()"
+      },
+      {
+        "intentId": "526f3528f7fd",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/ast-helpers.ts",
+          "startLine": 319,
+          "endLine": 319
+        },
+        "strength": "strong",
+        "textEvidence": "// Joi: joi.validate() or schema.validate()"
+      },
+      {
+        "intentId": "4ad3d2f5a625",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/ast-helpers.ts",
+          "startLine": 625,
+          "endLine": 625
+        },
+        "strength": "medium",
+        "textEvidence": "// Match cors() or cors middleware"
+      },
+      {
+        "intentId": "14ab1259a04f",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/ast-helpers.ts",
+          "startLine": 952,
+          "endLine": 952
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Find file upload handlers without proper validation */"
+      },
+      {
+        "intentId": "115a2a58ba67",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/ast-helpers.ts",
+          "startLine": 1096,
+          "endLine": 1096
+        },
+        "strength": "strong",
+        "textEvidence": "/** * Check if file contains validation schema usage */"
+      },
+      {
+        "intentId": "1abb43c06ab4",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/context-builder.ts",
+          "startLine": 77,
+          "endLine": 77
+        },
+        "strength": "medium",
+        "textEvidence": "// Find middleware file"
+      },
+      {
+        "intentId": "6785b980163c",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/helpers/context-builder.ts",
+          "startLine": 139,
+          "endLine": 139
+        },
+        "strength": "medium",
+        "textEvidence": "/** * Parse Prisma schema file if it exists */"
+      },
+      {
+        "intentId": "48c10f77a583",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/hallucinations/unused-security-imports.ts",
+          "startLine": 266,
+          "endLine": 266
+        },
+        "strength": "strong",
+        "textEvidence": "/** * VC-HALL-002: next-auth present but not enforced * * Detects when next-auth is installed but..."
+      },
+      {
+        "intentId": "ebc234cd6660",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/hallucinations/unused-security-imports.ts",
+          "startLine": 276,
+          "endLine": 276
+        },
+        "strength": "strong",
+        "textEvidence": "// Only check if next-auth is present"
+      },
+      {
+        "intentId": "bf0fffbfe14a",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/hallucinations/unused-security-imports.ts",
+          "startLine": 281,
+          "endLine": 281
+        },
+        "strength": "strong",
+        "textEvidence": "// Check if middleware exists and uses next-auth"
+      },
+      {
+        "intentId": "bd75e5d516eb",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/hallucinations/unused-security-imports.ts",
+          "startLine": 289,
+          "endLine": 289
+        },
+        "strength": "strong",
+        "textEvidence": "// Check API routes for auth enforcement"
+      },
+      {
+        "intentId": "81b536eff4f4",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/hallucinations/unused-security-imports.ts",
+          "startLine": 307,
+          "endLine": 307
+        },
+        "strength": "strong",
+        "textEvidence": "// If most routes lack auth checks, emit finding"
+      },
+      {
+        "intentId": "153283d9a6f3",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/hallucinations/unused-security-imports.ts",
+          "startLine": 285,
+          "endLine": 285
+        },
+        "strength": "strong",
+        "textEvidence": "// Middleware seems to enforce auth"
+      },
+      {
+        "intentId": "74bf10ed913c",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/hallucinations/unused-security-imports.ts",
+          "startLine": 347,
+          "endLine": 347
+        },
+        "strength": "strong",
+        "textEvidence": "//next-auth.js.org/configuration/nextjs\","
+      },
+      {
+        "intentId": "1da6db04625c",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/hallucinations/unused-security-imports.ts",
+          "startLine": 348,
+          "endLine": 348
+        },
+        "strength": "medium",
+        "textEvidence": "// middleware.ts"
+      },
+      {
+        "intentId": "9e1fc58eeab5",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/middleware/missing-rate-limit.ts",
+          "startLine": 18,
+          "endLine": 18
+        },
+        "strength": "strong",
+        "textEvidence": "/** * VC-RATE-001: Missing rate limiting on public state-changing endpoints * * Only consider POS..."
+      },
+      {
+        "intentId": "87f17a536b17",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/middleware/missing-rate-limit.ts",
+          "startLine": 31,
+          "endLine": 31
+        },
+        "strength": "medium",
+        "textEvidence": "// Check if middleware has rate limiting"
+      },
+      {
+        "intentId": "c975a5e2112d",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/middleware/missing-rate-limit.ts",
+          "startLine": 41,
+          "endLine": 41
+        },
+        "strength": "medium",
+        "textEvidence": "// If middleware already has rate limiting, skip this scanner"
+      },
+      {
+        "intentId": "08c1e746cd7b",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/middleware/missing-rate-limit.ts",
+          "startLine": 65,
+          "endLine": 65
+        },
+        "strength": "strong",
+        "textEvidence": "// Check for auth - only flag unauthenticated endpoints"
+      },
+      {
+        "intentId": "e8eb49ddf934",
+        "type": "RATE_LIMITED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/middleware/missing-rate-limit.ts",
+          "startLine": 120,
+          "endLine": 120
+        },
+        "strength": "strong",
+        "textEvidence": "// Using @upstash/ratelimit with Vercel KV:"
+      },
+      {
+        "intentId": "11c757c3d26e",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/network/open-redirect.ts",
+          "startLine": 73,
+          "endLine": 73
+        },
+        "strength": "strong",
+        "textEvidence": "// Validate redirect URL before use"
+      },
+      {
+        "intentId": "cb49133825e9",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/network/ssrf-prone-fetch.ts",
+          "startLine": 66,
+          "endLine": 66
+        },
+        "strength": "strong",
+        "textEvidence": "// Validate URL before fetching"
+      },
+      {
+        "intentId": "e255a5c38564",
+        "type": "MIDDLEWARE_PROTECTED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/privacy/debug-flags.ts",
+          "startLine": 118,
+          "endLine": 118
+        },
+        "strength": "medium",
+        "textEvidence": "// Guard debug flags with environment check:"
+      },
+      {
+        "intentId": "72828c470a37",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/privacy/over-broad-response.ts",
+          "startLine": 8,
+          "endLine": 8
+        },
+        "strength": "medium",
+        "textEvidence": "/** * VC-PRIV-002: Over-broad API response (returns whole ORM model) * * Detect in route handlers..."
+      },
+      {
+        "intentId": "d1d79020e02b",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/privacy/over-broad-response.ts",
+          "startLine": 39,
+          "endLine": 39
+        },
+        "strength": "medium",
+        "textEvidence": "// Check if model has sensitive fields from prisma schema"
+      },
+      {
+        "intentId": "929a2f039e12",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/privacy/over-broad-response.ts",
+          "startLine": 61,
+          "endLine": 61
+        },
+        "strength": "medium",
+        "textEvidence": "// Add prisma schema evidence if available"
+      },
+      {
+        "intentId": "f18b6fb1a326",
+        "type": "AUTH_ENFORCED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/privacy/sensitive-logging.ts",
+          "startLine": 8,
+          "endLine": 8
+        },
+        "strength": "strong",
+        "textEvidence": "/** * VC-PRIV-001: Sensitive data logged * * Detects console.log/info/error or logger calls that ..."
+      },
+      {
+        "intentId": "879c326c6fb7",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/uploads/missing-constraints.ts",
+          "startLine": 92,
+          "endLine": 92
+        },
+        "strength": "strong",
+        "textEvidence": "// For Next.js formData, validate the file:"
+      },
+      {
+        "intentId": "52874d243706",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/validation/client-side-only.ts",
+          "startLine": 8,
+          "endLine": 8
+        },
+        "strength": "strong",
+        "textEvidence": "/** * VC-VAL-002: Client-side-only validation * * Detects if validation libraries (zod/yup/joi) a..."
+      },
+      {
+        "intentId": "d56665932c6d",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/validation/client-side-only.ts",
+          "startLine": 22,
+          "endLine": 22
+        },
+        "strength": "strong",
+        "textEvidence": "// Find frontend files with validation"
+      },
+      {
+        "intentId": "621ba3094dd5",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/validation/client-side-only.ts",
+          "startLine": 46,
+          "endLine": 46
+        },
+        "strength": "strong",
+        "textEvidence": "// If no frontend validation found, skip"
+      },
+      {
+        "intentId": "c5391a580012",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/validation/client-side-only.ts",
+          "startLine": 51,
+          "endLine": 51
+        },
+        "strength": "strong",
+        "textEvidence": "// Check API routes for missing server-side validation"
+      },
+      {
+        "intentId": "37c8aa3ce9fe",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/validation/client-side-only.ts",
+          "startLine": 70,
+          "endLine": 70
+        },
+        "strength": "strong",
+        "textEvidence": "// Check if handler has validation"
+      },
+      {
+        "intentId": "fd36b325115d",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/validation/client-side-only.ts",
+          "startLine": 116,
+          "endLine": 116
+        },
+        "strength": "medium",
+        "textEvidence": "// Share your Zod schema between frontend and backend:"
+      },
+      {
+        "intentId": "20e8f39f27aa",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/validation/client-side-only.ts",
+          "startLine": 131,
+          "endLine": 131
+        },
+        "strength": "strong",
+        "textEvidence": "// Server-side validation"
+      },
+      {
+        "intentId": "ccf79c60261c",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/validation/client-side-only.ts",
+          "startLine": 140,
+          "endLine": 140
+        },
+        "strength": "strong",
+        "textEvidence": "// Use validated data"
+      },
+      {
+        "intentId": "5834877ef326",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/validation/ignored-validation.ts",
+          "startLine": 8,
+          "endLine": 8
+        },
+        "strength": "strong",
+        "textEvidence": "/** * VC-VAL-001: Validation defined but output ignored * * Detects when zod/yup/joi validation i..."
+      },
+      {
+        "intentId": "61fdb8050601",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/validation/ignored-validation.ts",
+          "startLine": 20,
+          "endLine": 20
+        },
+        "strength": "strong",
+        "textEvidence": "// Scan API route files for validation issues"
+      },
+      {
+        "intentId": "064c964dd755",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/validation/ignored-validation.ts",
+          "startLine": 33,
+          "endLine": 33
+        },
+        "strength": "strong",
+        "textEvidence": "// Case 1: Validation called but result not assigned"
+      },
+      {
+        "intentId": "0e923561c39c",
+        "type": "INPUT_VALIDATED",
+        "scope": "route",
+        "source": "comment",
+        "location": {
+          "file": "src/scanners/validation/ignored-validation.ts",
+          "startLine": 75,
+          "endLine": 75
+        },
+        "strength": "strong",
+        "textEvidence": "// Assign and use the validated result"
+      }
+    ]
+  },
+  "proofTraces": {}
+}

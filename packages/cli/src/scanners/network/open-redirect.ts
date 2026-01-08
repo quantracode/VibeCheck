@@ -69,22 +69,8 @@ export async function scanOpenRedirect(context: ScanContext): Promise<Finding[]>
           category: "network",
           evidence,
           remediation: {
-            recommendedFix: `Validate the redirect URL against an allowlist of permitted paths or domains. Never redirect to arbitrary user-provided URLs without validation.`,
-            patch: `// Validate redirect URL before use
-const allowedPaths = ['/dashboard', '/profile', '/settings'];
-const redirectUrl = searchParams.get('next') || '/';
-
-// Option 1: Only allow relative paths
-if (!redirectUrl.startsWith('/') || redirectUrl.startsWith('//')) {
-  return NextResponse.redirect(new URL('/', request.url));
-}
-
-// Option 2: Allowlist check
-if (!allowedPaths.some(path => redirectUrl.startsWith(path))) {
-  return NextResponse.redirect(new URL('/', request.url));
-}
-
-return NextResponse.redirect(new URL(redirectUrl, request.url));`,
+            recommendedFix: `Validate the redirect URL against an allowlist of permitted paths or domains. Never redirect to arbitrary user-provided URLs without validation. Options: (1) Only allow relative paths: check !url.startsWith('/') || url.startsWith('//'), (2) Use allowlist: check allowedPaths.some(path => url.startsWith(path)).`,
+            // No patch for redirect validation - requires defining application-specific allowlist of permitted paths/domains
           },
           links: {
             cwe: "https://cwe.mitre.org/data/definitions/601.html",

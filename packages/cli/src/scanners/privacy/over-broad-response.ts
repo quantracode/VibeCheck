@@ -94,20 +94,8 @@ export async function scanOverBroadResponse(context: ScanContext): Promise<Findi
           category: "privacy",
           evidence,
           remediation: {
-            recommendedFix: `Use Prisma's \`select\` clause to explicitly choose which fields to return. Never expose password hashes, tokens, or other sensitive data in API responses.`,
-            patch: `// Instead of:
-const users = await prisma.${query.model.toLowerCase()}.${query.operation}();
-
-// Use select to return only needed fields:
-const users = await prisma.${query.model.toLowerCase()}.${query.operation}({
-  select: {
-    id: true,
-    name: true,
-    email: true,
-    createdAt: true,
-    // Explicitly omit: password, passwordHash, tokens, etc.
-  },
-});`,
+            recommendedFix: `Use Prisma's \`select\` clause to explicitly choose which fields to return. Never expose password hashes, tokens, or other sensitive data in API responses. Example: prisma.user.findMany({ select: { id: true, name: true, email: true } }) - only include fields the API consumer needs.`,
+            // No patch for over-broad responses - requires understanding which fields are needed by the API consumer
           },
           links: {
             cwe: "https://cwe.mitre.org/data/definitions/359.html",

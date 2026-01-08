@@ -112,35 +112,8 @@ export async function scanClientSideOnlyValidation(context: ScanContext): Promis
         category: "validation",
         evidence,
         remediation: {
-          recommendedFix: `Add server-side validation using the same schema. Consider sharing schemas between frontend and backend.`,
-          patch: `// Share your Zod schema between frontend and backend:
-// lib/schemas/user.ts
-import { z } from "zod";
-
-export const createUserSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-});
-
-// In your API route:
-import { createUserSchema } from "@/lib/schemas/user";
-
-export async function POST(request: Request) {
-  const body = await request.json();
-
-  // Server-side validation
-  const result = createUserSchema.safeParse(body);
-  if (!result.success) {
-    return Response.json(
-      { error: result.error.flatten() },
-      { status: 400 }
-    );
-  }
-
-  // Use validated data
-  const { name, email } = result.data;
-  // ...
-}`,
+          recommendedFix: `Add server-side validation using the same schema. Consider sharing schemas between frontend and backend. Example with Zod: const result = schema.safeParse(body); if (!result.success) return Response.json({ error: result.error }, { status: 400 }); then use result.data for validated values.`,
+          // No patch for validation addition - requires knowing the validation schema structure and which fields to validate
         },
         links: {
           cwe: "https://cwe.mitre.org/data/definitions/20.html",

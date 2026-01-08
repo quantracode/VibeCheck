@@ -64,16 +64,8 @@ export async function scanIgnoredValidation(context: ScanContext): Promise<Findi
             category: "validation",
             evidence,
             remediation: {
-              recommendedFix: `Assign the validation result to a variable and use the validated data instead of the raw input.`,
-              patch: usage.library === "zod"
-                ? `// Instead of:
-schema.parse(data);
-
-// Do:
-const validatedData = schema.parse(data);
-// Use validatedData for all subsequent operations`
-                : `// Assign and use the validated result
-const validatedData = await schema.validate(data);`,
+              recommendedFix: `Assign the validation result to a variable and use the validated data instead of the raw input. For Zod: const validatedData = schema.parse(data). For Yup/Joi: const validatedData = await schema.validate(data). Then use validatedData for all operations.`,
+              // No patch for validation fixes - requires knowing actual variable names and how to replace raw body usage
             },
             links: {
               cwe: "https://cwe.mitre.org/data/definitions/20.html",

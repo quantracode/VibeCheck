@@ -63,26 +63,8 @@ export async function scanJwtDecodeUnverified(context: ScanContext): Promise<Fin
         category: "crypto",
         evidence,
         remediation: {
-          recommendedFix: `Use jwt.verify() instead of jwt.decode() to ensure the token signature is valid.`,
-          patch: `import jwt from 'jsonwebtoken';
-
-// WRONG - doesn't verify signature:
-// const payload = jwt.decode(token);
-
-// CORRECT - verifies signature:
-try {
-  const payload = jwt.verify(token, process.env.JWT_SECRET);
-  // Token is valid, payload can be trusted
-} catch (error) {
-  // Token is invalid or expired
-  throw new Error('Invalid token');
-}
-
-// If you need to read claims before verification (e.g., to get kid for key lookup):
-const header = jwt.decode(token, { complete: true })?.header;
-const kid = header?.kid;
-// ... look up the correct key ...
-const payload = jwt.verify(token, key); // MUST verify before trusting`,
+          recommendedFix: `Use jwt.verify() instead of jwt.decode() to ensure the token signature is valid. Example: jwt.verify(token, process.env.JWT_SECRET) with proper error handling. If you need to read claims before verification (e.g., to get kid for key lookup), decode the header first, look up the correct key, then verify with that key.`,
+          // No patch for JWT fixes - requires knowing secret location and error handling context
         },
         links: {
           cwe: "https://cwe.mitre.org/data/definitions/347.html",

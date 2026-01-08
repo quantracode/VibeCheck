@@ -61,21 +61,8 @@ export async function scanMathRandomTokens(context: ScanContext): Promise<Findin
         category: "crypto",
         evidence,
         remediation: {
-          recommendedFix: `Use crypto.randomBytes() or crypto.randomUUID() for security-sensitive random values.`,
-          patch: `import { randomBytes, randomUUID } from 'crypto';
-
-// For tokens/keys (hex string):
-const token = randomBytes(32).toString('hex');
-
-// For session IDs (URL-safe base64):
-const sessionId = randomBytes(24).toString('base64url');
-
-// For UUIDs:
-const id = randomUUID();
-
-// For numbers in a range (e.g., 6-digit code):
-const code = randomBytes(4).readUInt32BE() % 1000000;
-const resetCode = code.toString().padStart(6, '0');`,
+          recommendedFix: `Use crypto.randomBytes() or crypto.randomUUID() for security-sensitive random values. For tokens/keys: randomBytes(32).toString('hex'). For session IDs: randomBytes(24).toString('base64url'). For UUIDs: randomUUID(). For numeric codes: randomBytes(4).readUInt32BE() % range.`,
+          // No patch for crypto random fixes - the correct replacement depends on the specific use case
         },
         links: {
           cwe: "https://cwe.mitre.org/data/definitions/338.html",

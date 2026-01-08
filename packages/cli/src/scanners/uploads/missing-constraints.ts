@@ -72,38 +72,8 @@ export async function scanMissingUploadConstraints(context: ScanContext): Promis
           category: "uploads",
           evidence,
           remediation: {
-            recommendedFix: `Add both size limits and file type validation to your upload handler.`,
-            patch: upload.uploadMethod === "multer"
-              ? `// For multer, add limits and fileFilter:
-const upload = multer({
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-    files: 1, // Single file
-  },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type'));
-    }
-  },
-});`
-              : `// For Next.js formData, validate the file:
-const formData = await request.formData();
-const file = formData.get('file') as File;
-
-// Check file size
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-if (file.size > MAX_SIZE) {
-  return Response.json({ error: 'File too large' }, { status: 400 });
-}
-
-// Check file type
-const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-if (!allowedTypes.includes(file.type)) {
-  return Response.json({ error: 'Invalid file type' }, { status: 400 });
-}`,
+            recommendedFix: `Add both size limits and file type validation to your upload handler. For multer: add limits.fileSize and fileFilter callback. For Next.js formData: check file.size and file.type. Define allowed MIME types based on your use case (images, documents, etc.) and appropriate size limits.`,
+            // No patch for upload constraints - requires knowing appropriate size limits and allowed file types for the specific use case
           },
           links: {
             cwe: "https://cwe.mitre.org/data/definitions/434.html",

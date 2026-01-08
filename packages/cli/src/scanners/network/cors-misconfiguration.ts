@@ -66,26 +66,8 @@ export async function scanCorsMisconfiguration(context: ScanContext): Promise<Fi
         category: "network",
         evidence,
         remediation: {
-          recommendedFix: `When using credentials, you must specify explicit allowed origins instead of "*". Use an allowlist of trusted domains.`,
-          patch: `// Instead of:
-// cors({ origin: "*", credentials: true })
-
-// Use an allowlist:
-const allowedOrigins = [
-  'https://app.example.com',
-  'https://admin.example.com',
-];
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-}));`,
+          recommendedFix: `When using credentials, you must specify explicit allowed origins instead of "*". Use an allowlist of trusted domains. Example: cors({ origin: (origin, callback) => { if (allowedOrigins.includes(origin)) callback(null, true); else callback(new Error('Not allowed')); }, credentials: true })`,
+          // No patch for CORS fixes - requires defining application-specific allowlist of trusted origins
         },
         links: {
           cwe: "https://cwe.mitre.org/data/definitions/942.html",

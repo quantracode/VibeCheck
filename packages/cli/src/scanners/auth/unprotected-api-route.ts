@@ -2,6 +2,7 @@ import type { Finding, EvidenceItem, Severity } from "@vibecheck/schema";
 import type { ScanContext, DbSink } from "../types.js";
 import { resolvePath } from "../../utils/file-utils.js";
 import { generateFingerprint, generateFindingId } from "../../utils/fingerprint.js";
+import { generateFunctionStartPatch } from "../helpers/patch-generator.js";
 
 const RULE_ID = "VC-AUTH-001";
 
@@ -111,6 +112,22 @@ export async function scanUnprotectedApiRoutes(context: ScanContext): Promise<Fi
 
       const sinkOperations = sinks.map((s) => `${s.kind}.${s.operation}`).join(", ");
 
+      // Generate unified diff patch
+      const authCheckCode = `const session = await getServerSession(authOptions);
+if (!session) {
+  return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    status: 401,
+    headers: { "Content-Type": "application/json" }
+  });
+}`;
+
+      const patch = generateFunctionStartPatch(
+        repoRoot,
+        relPath,
+        handler.startLine,
+        authCheckCode
+      );
+
       findings.push({
         id: generateFindingId({
           ruleId: RULE_ID,
@@ -126,14 +143,7 @@ export async function scanUnprotectedApiRoutes(context: ScanContext): Promise<Fi
         evidence,
         remediation: {
           recommendedFix: `Add authentication to the ${handler.method} handler. Check for a valid session using getServerSession(), auth(), or similar before performing database operations.`,
-          patch: `// Add at the start of your handler:
-const session = await getServerSession(authOptions);
-if (!session) {
-  return new Response(JSON.stringify({ error: "Unauthorized" }), {
-    status: 401,
-    headers: { "Content-Type": "application/json" }
-  });
-}`,
+          patch: patch || undefined, // Only include patch if generation succeeded
         },
         links: {
           owasp: "https://owasp.org/Top10/A01_2021-Broken_Access_Control/",

@@ -538,64 +538,30 @@ function generateRemediation(
   category: AbuseClassification["category"],
   missing: AbuseClassification["missingEnforcement"]
 ): Finding["remediation"] {
-  const patches: string[] = [];
+  const recommendations: string[] = [];
 
   if (missing.includes("auth")) {
-    patches.push(`// Add authentication
-const session = await getServerSession(authOptions);
-if (!session) {
-  return Response.json({ error: "Unauthorized" }, { status: 401 });
-}`);
+    recommendations.push("authentication (e.g., getServerSession with 401 for unauthorized)");
   }
 
   if (missing.includes("rate_limit")) {
-    patches.push(`// Add rate limiting
-import { Ratelimit } from "@upstash/ratelimit";
-const ratelimit = new Ratelimit({
-  redis: kv,
-  limiter: Ratelimit.slidingWindow(10, "60 s"),
-});
-const { success } = await ratelimit.limit(userId);
-if (!success) {
-  return Response.json({ error: "Rate limit exceeded" }, { status: 429 });
-}`);
+    recommendations.push("rate limiting (e.g., @upstash/ratelimit with sliding window)");
   }
 
   if (missing.includes("request_size_limit")) {
-    patches.push(`// Add request size limit
-const body = await request.json();
-const size = JSON.stringify(body).length;
-if (size > 100 * 1024) { // 100KB limit
-  return Response.json({ error: "Request too large" }, { status: 413 });
-}`);
+    recommendations.push("request size limits (check JSON.stringify(body).length, reject if > threshold)");
   }
 
   if (missing.includes("timeout")) {
-    patches.push(`// Add timeout
-const controller = new AbortController();
-const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
-try {
-  const result = await expensiveOperation({ signal: controller.signal });
-} finally {
-  clearTimeout(timeout);
-}`);
+    recommendations.push("timeout enforcement (use AbortController with setTimeout)");
   }
 
   if (missing.includes("input_validation")) {
-    patches.push(`// Add input validation
-import { z } from "zod";
-const schema = z.object({
-  prompt: z.string().max(4000),
-  model: z.enum(["gpt-4", "gpt-3.5-turbo"]),
-});
-const { success, data } = schema.safeParse(body);
-if (!success) {
-  return Response.json({ error: "Invalid input" }, { status: 400 });
-}`);
+    recommendations.push("input validation (use Zod/Yup to validate and limit input size)");
   }
 
   return {
-    recommendedFix: `Add the following enforcement controls to protect against compute abuse: ${missing.map(m => m.replace(/_/g, " ")).join(", ")}.`,
-    patch: patches.join("\n\n"),
+    recommendedFix: `Add the following enforcement controls to protect against compute abuse: ${recommendations.join("; ")}.`,
+    // No patch for compute abuse fixes - each requires different implementation based on the specific operation and infrastructure
   };
 }

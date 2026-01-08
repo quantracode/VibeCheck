@@ -62,30 +62,8 @@ export async function scanSsrfProneFetch(context: ScanContext): Promise<Finding[
           category: "network",
           evidence,
           remediation: {
-            recommendedFix: `Validate and sanitize the URL before use. Use an allowlist of permitted domains or URL patterns. Never allow requests to internal networks, localhost, or cloud metadata endpoints.`,
-            patch: `// Validate URL before fetching
-const url = new URL(userProvidedUrl);
-
-// Check against allowlist
-const allowedHosts = ["api.example.com", "cdn.example.com"];
-if (!allowedHosts.includes(url.hostname)) {
-  throw new Error("URL not allowed");
-}
-
-// Block internal addresses
-const blockedPatterns = [
-  /^localhost$/i,
-  /^127\\.\\d+\\.\\d+\\.\\d+$/,
-  /^10\\.\\d+\\.\\d+\\.\\d+$/,
-  /^172\\.(1[6-9]|2[0-9]|3[0-1])\\.\\d+\\.\\d+$/,
-  /^192\\.168\\.\\d+\\.\\d+$/,
-  /^169\\.254\\.169\\.254$/, // AWS metadata
-];
-if (blockedPatterns.some(p => p.test(url.hostname))) {
-  throw new Error("URL not allowed");
-}
-
-const response = await fetch(url.toString());`,
+            recommendedFix: `Validate and sanitize the URL before use. Use an allowlist of permitted domains or URL patterns. Block requests to internal networks (10.x.x.x, 172.16-31.x.x, 192.168.x.x), localhost (127.x.x.x), and cloud metadata endpoints (169.254.169.254). Parse with new URL() and validate url.hostname.`,
+            // No patch for SSRF validation - requires defining application-specific allowlist of permitted domains
           },
           links: {
             cwe: "https://cwe.mitre.org/data/definitions/918.html",
