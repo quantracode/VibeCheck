@@ -104,8 +104,10 @@ if (!session) {
 
     expect(result.totalPatchable).toBe(1);
     expect(result.applied).toBe(0);
-    expect(result.failed).toBe(1);
-    expect(result.results[0].error).toContain("not in unified diff format");
+    expect(result.failed).toBe(0);
+    expect(result.noAutomatedPatch).toBe(1);
+    expect(result.results[0].error).toContain("No automated patch available");
+    expect(result.results[0].noAutomatedPatch).toBe(true);
   });
 
   it("should handle findings without patches", async () => {
@@ -141,6 +143,7 @@ if (!session) {
     expect(result.totalPatchable).toBe(0);
     expect(result.applied).toBe(0);
     expect(result.failed).toBe(0);
+    expect(result.noAutomatedPatch).toBe(0);
   });
 
   it("should handle empty findings array", async () => {
@@ -152,6 +155,7 @@ if (!session) {
     expect(result.totalPatchable).toBe(0);
     expect(result.applied).toBe(0);
     expect(result.failed).toBe(0);
+    expect(result.noAutomatedPatch).toBe(0);
   });
 
   it("should count patchable findings correctly", async () => {

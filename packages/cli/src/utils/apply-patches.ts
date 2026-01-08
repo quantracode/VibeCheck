@@ -18,6 +18,14 @@ export interface PatchResult {
   error?: string;
   /** The patch that was applied */
   patch: string;
+  /** Rule ID for the finding */
+  ruleId?: string;
+  /** Title of the finding */
+  title?: string;
+  /** Recommended fix text (if no automated patch) */
+  recommendedFix?: string;
+  /** Whether this failed because no automated patch is available */
+  noAutomatedPatch?: boolean;
 }
 
 /**
@@ -32,6 +40,8 @@ export interface PatchSummary {
   failed: number;
   /** Number of patches skipped (user declined) */
   skipped: number;
+  /** Number of findings without automated patches */
+  noAutomatedPatch: number;
   /** Individual patch results */
   results: PatchResult[];
 }
@@ -183,6 +193,7 @@ export async function applyPatches(
       applied: 0,
       failed: 0,
       skipped: 0,
+      noAutomatedPatch: 0,
       results: [],
     };
   }
@@ -213,8 +224,12 @@ export async function applyPatches(
         findingId: finding.id,
         file: targetFile,
         success: false,
-        error: "Patch is not in unified diff format. Only standard git-style diffs are supported.",
+        error: "No automated patch available for this finding",
         patch,
+        ruleId: finding.ruleId,
+        title: finding.title,
+        recommendedFix: finding.remediation.recommendedFix,
+        noAutomatedPatch: true,
       });
       continue;
     }
@@ -296,14 +311,16 @@ export async function applyPatches(
   }
 
   const applied = results.filter((r) => r.success).length;
-  const failed = results.filter((r) => !r.success && r.error !== "User declined").length;
+  const failed = results.filter((r) => !r.success && r.error !== "User declined" && !r.noAutomatedPatch).length;
   const skipped = results.filter((r) => r.error === "User declined").length;
+  const noAutomatedPatch = results.filter((r) => r.noAutomatedPatch).length;
 
   return {
     totalPatchable: patchableFindings.length,
     applied,
     failed,
     skipped,
+    noAutomatedPatch,
     results,
   };
 }

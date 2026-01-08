@@ -731,13 +731,47 @@ export async function executeScan(
     if (patchSummary.skipped > 0) {
       console.log(`\x1b[90mSkipped: ${patchSummary.skipped}\x1b[0m`);
     }
+    if (patchSummary.noAutomatedPatch > 0) {
+      console.log(`\x1b[33mNo automated patch: ${patchSummary.noAutomatedPatch}\x1b[0m`);
+    }
 
-    // Show failed patches
+    // Show failed patches (actual errors, not missing automated patches)
     if (patchSummary.failed > 0) {
       console.log("\nFailed patches:");
       for (const result of patchSummary.results) {
-        if (!result.success && result.error !== "User declined") {
+        if (!result.success && result.error !== "User declined" && !result.noAutomatedPatch) {
           console.log(`  \x1b[31m✗\x1b[0m ${result.file}: ${result.error}`);
+        }
+      }
+    }
+
+    // Show findings without automated patches
+    if (patchSummary.noAutomatedPatch > 0) {
+      console.log("\nFindings without automated patches:");
+      console.log(`\x1b[90mThese findings require manual review and fixing.\x1b[0m\n`);
+
+      for (const result of patchSummary.results) {
+        if (result.noAutomatedPatch) {
+          console.log(`  \x1b[33m●\x1b[0m \x1b[36m[${result.ruleId}]\x1b[0m ${result.title}`);
+          console.log(`    File: ${result.file}`);
+          if (result.recommendedFix) {
+            // Wrap the recommendedFix text to 70 characters
+            const maxWidth = 70;
+            const words = result.recommendedFix.split(' ');
+            let line = '    ';
+            for (const word of words) {
+              if (line.length + word.length + 1 > maxWidth) {
+                console.log(`\x1b[90m${line}\x1b[0m`);
+                line = '    ' + word;
+              } else {
+                line += (line.length > 4 ? ' ' : '') + word;
+              }
+            }
+            if (line.length > 4) {
+              console.log(`\x1b[90m${line}\x1b[0m`);
+            }
+          }
+          console.log('');
         }
       }
     }
