@@ -23,6 +23,12 @@ npm install -g @quantracode/vibecheck
 
 # Or use without installing
 npx @quantracode/vibecheck scan --fail-on off --out vibecheck-scan.json
+
+# With auto-fix enabled
+npx @quantracode/vibecheck scan --apply-fixes
+
+# With custom security rules
+npx @quantracode/vibecheck scan --rules ./my-custom-rules
 ```
 
 ### Scan Another Folder
@@ -63,6 +69,18 @@ vibecheck scan --include-tests
 
 # Generate intent map with coverage metrics
 vibecheck scan --emit-intent-map
+
+# Auto-fix security issues (with confirmation)
+vibecheck scan --apply-fixes
+
+# Auto-fix without confirmation prompts
+vibecheck scan --apply-fixes --force
+
+# Load custom YAML security rules
+vibecheck scan --rules ./my-custom-rules
+
+# Load a single custom rule file
+vibecheck scan -r my-rule.yaml
 
 # Explain a scan report
 vibecheck explain ./scan.json
@@ -146,6 +164,9 @@ vibecheck view
 | `-e, --exclude <glob>` | Glob pattern to exclude (repeatable) | See below |
 | `--include-tests` | Include test files in scan | `false` |
 | `--emit-intent-map` | Include route map and coverage metrics | `false` |
+| `--apply-fixes` | Apply patches from findings after scan | `false` |
+| `--force` | Skip confirmation when applying patches | `false` |
+| `-r, --rules <path>` | Load custom YAML rules from directory or file | - |
 
 ### Default Excludes
 
@@ -159,6 +180,238 @@ The following patterns are excluded by default:
 - `__tests__/**`, `*.test.*`, `*.spec.*`
 - `test/`, `tests/`, `fixtures/`, `__mocks__/`, `__fixtures__/`
 - `cypress/`, `e2e/`, `*.stories.*`
+
+## Auto-Fix Security Issues
+
+VibeCheck can automatically apply security patches from findings:
+
+```bash
+# Apply fixes with confirmation prompts for each patch
+vibecheck scan --apply-fixes
+
+# Apply all fixes automatically without prompts (use with caution!)
+vibecheck scan --apply-fixes --force
+```
+
+### How It Works
+
+1. **Scan completes** - VibeCheck identifies security issues
+2. **Patches available** - Findings with `remediation.patch` field are candidates for auto-fix
+3. **Preview shown** - Each patch is displayed with before/after comparison
+4. **User confirmation** - You approve or reject each patch (unless `--force` is used)
+5. **Applied to files** - Approved patches are written to your source files
+
+### Safety Features
+
+- **Unified diff format**: Only standard git-style diffs are supported for safety
+- **Context validation**: Patches verify that file content matches before applying
+- **Confirmation required**: Interactive approval by default
+- **Detailed errors**: Clear messages if a patch fails to apply
+
+### Best Practices
+
+1. **Commit first**: Always have a clean git status before applying fixes
+2. **Review changes**: Run `git diff` after applying patches
+3. **Test thoroughly**: Run your test suite to ensure nothing broke
+4. **Use force carefully**: Only use `--force` when you fully trust the patches
+
+**Example:**
+
+```bash
+# 1. Ensure clean working directory
+git status
+
+# 2. Run scan with auto-fix
+vibecheck scan --apply-fixes
+
+# 3. Review what changed
+git diff
+
+# 4. Test the changes
+npm test
+
+# 5. Commit if everything looks good
+git add .
+git commit -m "fix: apply VibeCheck security patches"
+```
+
+## Custom Security Rules
+
+Extend VibeCheck with your own YAML-based security rules - no TypeScript required!
+
+```bash
+# Load custom rules from a directory
+vibecheck scan --rules ./my-custom-rules
+
+# Load a single rule file
+vibecheck scan -r my-security-rule.yaml
+```
+
+### Example Custom Rule
+
+```yaml
+id: CUSTOM-AUTH-001
+severity: high
+category: auth
+title: "Missing authentication on POST endpoint"
+description: |
+  POST endpoints should have authentication checks to prevent
+  unauthorized access to state-changing operations.
+
+files:
+  file_type: [ts, tsx]
+  include: ["**/api/**/*.ts"]
+  exclude: ["**/*.test.*"]
+
+match:
+  contains: "export async function POST"
+  not_contains: "getServerSession"
+  case_sensitive: false
+
+context:
+  in_function: [POST]
+  file_not_contains: ["test", "mock"]
+
+recommended_fix: |
+  Add authentication to your POST handler:
+
+  ```typescript
+  import { getServerSession } from "next-auth";
+
+  export async function POST(request: Request) {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+    // ... rest of handler
+  }
+  ```
+
+links:
+  owasp: https://owasp.org/API-Security/editions/2023/en/0xa2-broken-authentication/
+  cwe: https://cwe.mitre.org/data/definitions/306.html
+
+metadata:
+  author: "Your Name"
+  tags: ["authentication", "api-security"]
+  created: "2025-01-07"
+```
+
+### Rule Structure
+
+**Required Fields:**
+- `id`: Unique identifier (format: `XXX-XXX-000`)
+- `severity`: `critical`, `high`, `medium`, `low`, or `info`
+- `category`: Security category (auth, validation, secrets, etc.)
+- `title`: Short description
+- `description`: Detailed explanation
+- `match`: What to look for (see Match Conditions below)
+- `recommended_fix`: How to fix the issue
+
+**Optional Fields:**
+- `files`: File filters (type, include/exclude patterns, directories)
+- `context`: Advanced conditions (imports, function types, file content)
+- `patch`: Unified diff for auto-fixing
+- `links`: Reference URLs (OWASP, CWE, docs)
+- `metadata`: Author, tags, version, dates
+- `enabled`: Whether the rule is active (default: true)
+
+### Match Conditions
+
+**String Match:**
+```yaml
+match:
+  contains: "eval("
+  case_sensitive: true
+```
+
+**Negative Match (should NOT contain):**
+```yaml
+match:
+  not_contains: "getServerSession"  # Flag files without auth
+```
+
+**Regular Expression:**
+```yaml
+match:
+  regex: "password\\s*=\\s*['\"][^'\"]+['\"]"
+  case_sensitive: false
+```
+
+**Combined Conditions:**
+```yaml
+match:
+  contains: "export async function POST"
+  not_contains: "await auth()"
+  regex: "prisma\\.(create|update|delete)"
+```
+
+### File Filters
+
+```yaml
+files:
+  file_type: [ts, tsx, js, jsx]
+  include: ["**/api/**/*.ts", "**/routes/**/*.ts"]
+  exclude: ["**/*.test.*", "**/*.spec.*"]
+  directories: ["/api/", "/routes/"]
+```
+
+Available file types: `ts`, `tsx`, `js`, `jsx`, `json`, `env`, `yaml`, `yml`, `md`, `config`, `any`
+
+### Context Conditions
+
+```yaml
+context:
+  # Only flag if file imports these packages
+  requires_import: ["next-auth", "@prisma/client"]
+
+  # Don't flag if file imports these
+  excludes_import: ["vitest", "@testing-library"]
+
+  # File must contain all of these
+  file_contains: ["database", "user"]
+
+  # File must NOT contain any of these
+  file_not_contains: ["test", "mock"]
+
+  # Only match in specific handler types
+  in_function: [POST, PUT, DELETE, route_handler]
+```
+
+### Multiple Rules in One File
+
+```yaml
+schema_version: "1.0"
+
+rules:
+  - id: CUSTOM-001
+    severity: high
+    category: auth
+    title: "First rule"
+    # ... rule config
+
+  - id: CUSTOM-002
+    severity: medium
+    category: validation
+    title: "Second rule"
+    # ... rule config
+```
+
+### Complete Guide
+
+See [examples/CUSTOM_RULES_GUIDE.md](./examples/CUSTOM_RULES_GUIDE.md) for:
+- Full rule specification
+- Advanced examples (SQL injection, hardcoded secrets, etc.)
+- Best practices and troubleshooting
+- Community contribution guidelines
+
+### Example Rules
+
+Check out [examples/custom-rules/](./examples/custom-rules/) for production-ready examples:
+- `hardcoded-secret.yaml` - Detect secrets in .env files
+- `missing-rate-limit.yaml` - Find API routes without rate limiting
+- `console-log-production.yaml` - Flag console.log in production code
+- `collection-example.yaml` - Multiple rules in one file
 
 ## Scanner Categories
 

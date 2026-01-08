@@ -1,0 +1,121 @@
+# Example: Multiple rules in a single file
+schema_version: "1.0"
+
+rules:
+  # Rule 1: Detect TODO comments with security implications
+  - id: CUSTOM-TODO-001
+    version: "1.0.0"
+    severity: info
+    confidence: 0.5
+    category: other
+    title: "Security TODO comment found"
+    description: |
+      Found a TODO comment related to security. These should be tracked and
+      resolved before production deployment.
+
+    files:
+      file_type:
+        - ts
+        - tsx
+        - js
+        - jsx
+
+    match:
+      regex: "//\\s*TODO.*(?:auth|security|encrypt|sanitize|validate|xss|csrf)"
+      case_sensitive: false
+
+    recommended_fix: |
+      Create a ticket to address this security TODO and remove the comment
+      once implemented.
+
+    metadata:
+      author: "VibeCheck Community"
+      tags: ["todo", "tracking"]
+
+    enabled: true
+
+  # Rule 2: Detect eval() usage
+  - id: CUSTOM-INJECT-001
+    version: "1.0.0"
+    severity: high
+    confidence: 0.9
+    category: injection
+    title: "Dangerous eval() usage detected"
+    description: |
+      The eval() function executes arbitrary code and is extremely dangerous.
+      It can lead to code injection vulnerabilities if used with user input.
+
+    files:
+      file_type:
+        - ts
+        - js
+      exclude:
+        - "**/node_modules/**"
+
+    match:
+      regex: "\\beval\\s*\\("
+      case_sensitive: true
+
+    recommended_fix: |
+      Remove eval() and use safer alternatives:
+      - For JSON parsing: Use JSON.parse()
+      - For dynamic property access: Use bracket notation (obj[key])
+      - For dynamic execution: Redesign to avoid it, or use Function constructor
+        with extreme caution
+
+    links:
+      owasp: https://owasp.org/www-community/attacks/Code_Injection
+      cwe: https://cwe.mitre.org/data/definitions/95.html
+
+    metadata:
+      author: "VibeCheck Community"
+      tags: ["injection", "eval"]
+
+    enabled: true
+
+  # Rule 3: Detect missing HTTPS in production URLs
+  - id: CUSTOM-NET-001
+    version: "1.0.0"
+    severity: medium
+    confidence: 0.7
+    category: network
+    title: "HTTP URL in production configuration"
+    description: |
+      Found an HTTP URL in what appears to be production configuration.
+      Production URLs should always use HTTPS to ensure encryption in transit.
+
+    files:
+      file_type:
+        - env
+        - config
+        - json
+      exclude:
+        - "**/*.local.*"
+        - "**/*.dev.*"
+
+    match:
+      regex: "(URL|ENDPOINT|HOST)=http://(?!localhost|127\\.0\\.0\\.1)"
+      case_sensitive: false
+
+    context:
+      file_contains:
+        - "production"
+        - "prod"
+
+    recommended_fix: |
+      Update all production URLs to use HTTPS:
+
+      # Before:
+      API_URL=http://api.example.com
+
+      # After:
+      API_URL=https://api.example.com
+
+    links:
+      owasp: https://owasp.org/www-community/controls/Secure_transmission
+
+    metadata:
+      author: "VibeCheck Community"
+      tags: ["https", "encryption"]
+
+    enabled: true

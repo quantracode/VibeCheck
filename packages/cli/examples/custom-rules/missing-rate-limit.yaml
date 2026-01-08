@@ -1,0 +1,78 @@
+# Example custom rule: Detect API routes without rate limiting
+id: CUSTOM-RATE-001
+version: "1.0.0"
+severity: medium
+confidence: 0.75
+category: middleware
+title: "API route missing rate limiting protection"
+description: |
+  This API route does not implement rate limiting. Without rate limiting,
+  your API is vulnerable to abuse, DoS attacks, and resource exhaustion.
+  Consider using express-rate-limit, rate-limiter-flexible, or similar.
+
+# File filters - only check route files
+files:
+  file_type:
+    - ts
+    - js
+  include:
+    - "**/api/**/*.ts"
+    - "**/api/**/*.js"
+    - "**/routes/**/*.ts"
+    - "**/routes/**/*.js"
+  exclude:
+    - "**/*.test.*"
+    - "**/*.spec.*"
+
+# Match conditions
+match:
+  # Look for route exports or app.post/get patterns
+  regex: "export (async )?function (POST|GET|PUT|DELETE)|app\\.(post|get|put|delete)"
+  case_sensitive: false
+
+# Context conditions
+context:
+  # Only flag route handlers
+  in_function:
+    - POST
+    - PUT
+    - DELETE
+    - route_handler
+  # File should NOT already have rate limiting
+  file_not_contains:
+    - "rateLimit"
+    - "rate-limit"
+    - "rateLimiter"
+
+# Remediation
+recommended_fix: |
+  Add rate limiting middleware to protect your API routes.
+
+  For Express:
+  ```javascript
+  import rateLimit from 'express-rate-limit';
+
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+  });
+
+  app.use('/api/', limiter);
+  ```
+
+  For Next.js:
+  Use middleware or a library like `next-rate-limit`.
+
+links:
+  owasp: https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/
+  documentation: https://www.npmjs.com/package/express-rate-limit
+
+metadata:
+  author: "VibeCheck Community"
+  tags:
+    - "rate-limiting"
+    - "dos"
+    - "api-security"
+  created: "2025-01-07"
+
+enabled: true

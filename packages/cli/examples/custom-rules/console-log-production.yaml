@@ -1,0 +1,75 @@
+# Example custom rule: Detect console.log in production code
+id: CUSTOM-DEBUG-001
+version: "1.0.0"
+severity: low
+confidence: 0.6
+category: privacy
+title: "Console.log found in production code"
+description: |
+  Console.log statements should be removed from production code. They can:
+  - Expose sensitive information in browser console
+  - Impact performance in production
+  - Create noise in server logs
+
+  Use a proper logging library instead (winston, pino, etc.).
+
+# File filters
+files:
+  file_type:
+    - ts
+    - tsx
+    - js
+    - jsx
+  exclude:
+    - "**/*.test.*"
+    - "**/*.spec.*"
+    - "**/test/**"
+    - "**/tests/**"
+    - "**/__tests__/**"
+    - "**/dev/**"
+    - "**/scripts/**"
+
+# Match conditions
+match:
+  contains: "console.log"
+  case_sensitive: false
+
+# Context conditions
+context:
+  # Ignore files that are clearly dev utilities
+  file_not_contains:
+    - "development only"
+    - "debug mode"
+    - "DEV_MODE"
+
+# Remediation
+recommended_fix: |
+  Replace console.log with a proper logging library:
+
+  ```typescript
+  // Instead of:
+  console.log('User logged in:', userId);
+
+  // Use:
+  logger.info('User logged in', { userId });
+  ```
+
+  Configure your logger to only log in development:
+  ```typescript
+  const logger = winston.createLogger({
+    level: process.env.NODE_ENV === 'production' ? 'error' : 'debug',
+  });
+  ```
+
+links:
+  documentation: https://www.npmjs.com/package/winston
+
+metadata:
+  author: "VibeCheck Community"
+  tags:
+    - "logging"
+    - "debugging"
+    - "production"
+  created: "2025-01-07"
+
+enabled: true

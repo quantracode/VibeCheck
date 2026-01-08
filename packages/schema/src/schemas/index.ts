@@ -65,6 +65,22 @@ export {
   type SupplyChainInfo,
 } from "./supply-chain.js";
 
+// Custom rule schemas and types
+export {
+  FileTypeSchema,
+  MatchConditionSchema,
+  FileFilterSchema,
+  ContextConditionSchema,
+  CustomRuleSchema,
+  CustomRuleCollectionSchema,
+  type FileType,
+  type MatchCondition,
+  type FileFilter,
+  type ContextCondition,
+  type CustomRule,
+  type CustomRuleCollection,
+} from "./custom-rule.js";
+
 // Artifact schemas and types
 export {
   ARTIFACT_VERSION,

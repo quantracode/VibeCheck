@@ -9,6 +9,8 @@ VibeCheck scans your codebase for security issues and generates a structured JSO
 ### Features
 
 - **CLI Scanner**: 30+ scanners detect authentication gaps, unused security imports, hardcoded secrets, supply chain risks, and more
+- **Auto-Fix**: Apply security patches automatically with the `--apply-fixes` flag
+- **Custom Rules**: Write your own security rules in YAML without touching TypeScript
 - **Artifact Viewer**: Beautiful web UI to explore findings, filter by severity, and export reports
 - **Local-Only**: Your code never leaves your machine. The UI runs entirely in your browser with IndexedDB storage
 - **Policy Engine**: Configurable risk thresholds and profiles for CI/CD integration
@@ -123,12 +125,68 @@ node packages/cli/dist/index.js scan . --repo-name my-project --out scan-results
 vibecheck scan <directory> [options]
 
 Options:
-  -o, --out <path>       Output file path (default: stdout)
-  -f, --format <format>  Output format: json, sarif, or both (default: json)
-  --repo-name <name>     Repository name for the artifact
-  --fail-on <severity>   Exit with code 1 if findings at or above severity (critical|high|medium|low|off)
-  --changed              Only scan files changed in git
+  -o, --out <path>         Output file path (default: stdout)
+  -f, --format <format>    Output format: json, sarif, or both (default: json)
+  --repo-name <name>       Repository name for the artifact
+  --fail-on <severity>     Exit with code 1 if findings at or above severity (critical|high|medium|low|off)
+  --changed                Only scan files changed in git
+  --apply-fixes            Apply patches from findings after scan (requires confirmation)
+  --force                  Skip confirmation prompts when applying patches
+  -r, --rules <path>       Load custom YAML security rules from directory or file
+  -e, --exclude <glob>     Additional glob patterns to exclude (repeatable)
+  --include-tests          Include test files in scan
 ```
+
+#### Auto-Fix Security Issues
+
+VibeCheck can automatically apply security patches:
+
+```bash
+# Apply fixes with confirmation prompts
+npx @quantracode/vibecheck scan --apply-fixes
+
+# Apply all fixes without prompts (use with caution)
+npx @quantracode/vibecheck scan --apply-fixes --force
+```
+
+The `--apply-fixes` flag reads patches from findings and applies them to your source files. Each patch is shown with a preview and requires confirmation unless `--force` is used.
+
+#### Custom Security Rules
+
+Extend VibeCheck with your own YAML-based rules:
+
+```bash
+# Load custom rules from a directory
+npx @quantracode/vibecheck scan --rules ./my-custom-rules
+
+# Load a single rule file
+npx @quantracode/vibecheck scan -r my-rule.yaml
+```
+
+**Example Custom Rule:**
+
+```yaml
+id: CUSTOM-AUTH-001
+severity: high
+category: auth
+title: "Missing authentication on POST endpoint"
+description: "POST endpoints should have authentication checks"
+
+files:
+  file_type: [ts, tsx]
+  include: ["**/api/**/*.ts"]
+
+match:
+  contains: "export async function POST"
+  not_contains: "getServerSession"
+
+recommended_fix: "Add authentication to your POST handler"
+
+links:
+  owasp: https://owasp.org/API-Security/
+```
+
+See [packages/cli/examples/CUSTOM_RULES_GUIDE.md](packages/cli/examples/CUSTOM_RULES_GUIDE.md) for a complete guide and more examples.
 
 ### View Results in the UI
 

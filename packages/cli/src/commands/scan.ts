@@ -16,6 +16,15 @@ import {
 } from "../utils/file-utils.js";
 import { hashPath } from "../utils/fingerprint.js";
 import { getGitInfo, getRepoName } from "../utils/git-info.js";
+import { applyPatches } from "../utils/apply-patches.js";
+import {
+  loadRulesFromDirectory,
+  validateCustomRules,
+  printRulesSummary,
+} from "../utils/custom-rules-loader.js";
+import {
+  createScannersFromRules,
+} from "../scanners/custom-rule-engine.js";
 import {
   ALL_SCANNERS,
   ALL_SCANNER_PACKS,
@@ -23,6 +32,7 @@ import {
   severityMeetsThreshold,
   type ScanContext,
   type ScanContextOptions,
+  type Scanner,
 } from "../scanners/index.js";
 import {
   buildRouteMap,
@@ -73,6 +83,12 @@ export interface ScanOptions {
   exclude: string[];
   /** Include test files in scan */
   includeTests: boolean;
+  /** Apply patches from findings after scan */
+  applyFixes: boolean;
+  /** Skip confirmation prompts when applying patches */
+  force: boolean;
+  /** Path to custom rules directory or file */
+  rules?: string;
 }
 
 const DEFAULT_OUTPUT_DIR = "vibecheck-artifacts";
@@ -119,14 +135,25 @@ function getOutputPath(basePath: string, format: "json" | "sarif", targetDir: st
  */
 async function runScannersWithProgress(
   baseContext: ScanContext,
-  totalFiles: number
+  totalFiles: number,
+  customScanners: Scanner[] = []
 ): Promise<Finding[]> {
   const allFindings: Finding[] = [];
   const seenFingerprints = new Set<string>();
 
+  // Create a custom pack for user-provided rules
+  const packs = [...ALL_SCANNER_PACKS];
+  if (customScanners.length > 0) {
+    packs.push({
+      id: "custom",
+      name: "Custom Rules",
+      scanners: customScanners,
+    });
+  }
+
   // Initialize progress display with file count
   const progress = new ScanProgress(
-    ALL_SCANNER_PACKS.map((pack) => ({
+    packs.map((pack) => ({
       id: pack.id,
       name: pack.name,
       scannerCount: pack.scanners.length,
@@ -159,8 +186,8 @@ async function runScannersWithProgress(
   progress.start();
 
   // Iterate through packs for progress tracking
-  for (let packIndex = 0; packIndex < ALL_SCANNER_PACKS.length; packIndex++) {
-    const pack = ALL_SCANNER_PACKS[packIndex];
+  for (let packIndex = 0; packIndex < packs.length; packIndex++) {
+    const pack = packs[packIndex];
     progress.startPack(packIndex);
 
     for (let scannerIndex = 0; scannerIndex < pack.scanners.length; scannerIndex++) {
@@ -471,8 +498,37 @@ export async function executeScan(
   console.log(`\x1b[90m   ├─ Config files: ${initialContext.fileIndex.configFiles.length}\x1b[0m`);
   console.log(`\x1b[90m   └─ Framework: ${initialContext.repoMeta.framework}\x1b[0m`);
 
+  // Load custom rules if provided
+  let customScanners: Scanner[] = [];
+  if (options.rules) {
+    const rulesSpinner = new Spinner("Loading custom rules");
+    rulesSpinner.start();
+
+    try {
+      const customRules = loadRulesFromDirectory(options.rules);
+      const validation = validateCustomRules(customRules);
+
+      if (validation.errors.length > 0) {
+        rulesSpinner.fail("Failed to validate custom rules");
+        console.error("\n\x1b[31mCustom rule validation errors:\x1b[0m");
+        for (const error of validation.errors) {
+          console.error(`  [${error.ruleId}] ${error.error}`);
+        }
+        return 1;
+      }
+
+      customScanners = createScannersFromRules(validation.valid);
+      rulesSpinner.succeed(`Loaded ${validation.valid.length} custom rule(s)`);
+      printRulesSummary(validation.valid);
+    } catch (error) {
+      rulesSpinner.fail("Failed to load custom rules");
+      console.error(`\x1b[31m${error instanceof Error ? error.message : String(error)}\x1b[0m`);
+      return 1;
+    }
+  }
+
   // Run scanners with progress tracking
-  const findings = await runScannersWithProgress(initialContext, totalFiles);
+  const findings = await runScannersWithProgress(initialContext, totalFiles, customScanners);
 
   const endTime = Date.now();
   const scanDurationMs = endTime - startTime;
@@ -648,6 +704,47 @@ export async function executeScan(
   // Print summary
   printSummary(artifact, options);
 
+  // Apply patches if --apply-fixes flag is set
+  if (options.applyFixes) {
+    console.log("\n" + "=".repeat(60));
+    console.log("Applying Patches");
+    console.log("=".repeat(60));
+
+    const patchSummary = await applyPatches(
+      artifact.findings,
+      absoluteTarget,
+      {
+        force: options.force,
+        dryRun: false,
+      }
+    );
+
+    // Print patch summary
+    console.log("\n" + "-".repeat(60));
+    console.log("Patch Summary");
+    console.log("-".repeat(60));
+    console.log(`Total patchable findings: ${patchSummary.totalPatchable}`);
+    console.log(`\x1b[32mSuccessfully applied: ${patchSummary.applied}\x1b[0m`);
+    if (patchSummary.failed > 0) {
+      console.log(`\x1b[31mFailed: ${patchSummary.failed}\x1b[0m`);
+    }
+    if (patchSummary.skipped > 0) {
+      console.log(`\x1b[90mSkipped: ${patchSummary.skipped}\x1b[0m`);
+    }
+
+    // Show failed patches
+    if (patchSummary.failed > 0) {
+      console.log("\nFailed patches:");
+      for (const result of patchSummary.results) {
+        if (!result.success && result.error !== "User declined") {
+          console.log(`  \x1b[31m✗\x1b[0m ${result.file}: ${result.error}`);
+        }
+      }
+    }
+
+    console.log("");
+  }
+
   // Check fail threshold
   if (shouldFail(findings, failOn)) {
     console.log(
@@ -728,6 +825,18 @@ export function registerScanCommand(program: Command): void {
       "--no-emit-traces",
       "Exclude proof traces from output"
     )
+    .option(
+      "--apply-fixes",
+      "Apply patches from findings after scan (requires confirmation unless --force is used)"
+    )
+    .option(
+      "--force",
+      "Skip confirmation prompts when applying patches (use with --apply-fixes)"
+    )
+    .option(
+      "-r, --rules <path>",
+      "Path to directory containing custom YAML rules or a single YAML rule file"
+    )
     .addHelpText(
       "after",
       `
@@ -750,6 +859,10 @@ Examples:
   $ vibecheck scan --include-tests              Include test files
   $ vibecheck scan --no-emit-intents            Skip intent mining
   $ vibecheck scan --no-emit-traces             Skip proof trace building
+  $ vibecheck scan --apply-fixes                Apply patches from findings (with confirmation)
+  $ vibecheck scan --apply-fixes --force        Apply patches without confirmation prompts
+  $ vibecheck scan --rules ./custom-rules       Load custom YAML rules from directory
+  $ vibecheck scan -r my-rule.yaml              Load a single custom YAML rule file
 
 Windows-safe output paths:
   $ vibecheck scan --out vibecheck-scan.json    Relative path (recommended)
@@ -778,6 +891,9 @@ Default excludes:
         emitTraces: cmdOptions.emitTraces !== false, // default true
         exclude: cmdOptions.exclude as string[],
         includeTests: Boolean(cmdOptions.includeTests),
+        applyFixes: Boolean(cmdOptions.applyFixes),
+        force: Boolean(cmdOptions.force),
+        rules: cmdOptions.rules as string | undefined,
       };
 
       const exitCode = await executeScan(targetDir, options);
