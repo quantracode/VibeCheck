@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileCode, ChevronRight, Shield } from "lucide-react";
+import { FileCode, ChevronRight, Shield, AlertCircle, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SeverityBadge } from "./SeverityBadge";
 import { ConfidenceMeter } from "./ConfidenceMeter";
@@ -85,21 +85,43 @@ export function FindingsTable({ findings, className, waivedFingerprints }: Findi
                       {finding.description}
                     </p>
 
-                    {finding.evidence.length > 0 && (
-                      <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground/80">
-                        <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/30 rounded border border-border/40">
+                    {/* Plain English Preview */}
+                    {finding.enhancements?.plainEnglish && (
+                      <div className="flex items-start gap-2 mt-3 p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/20">
+                        <AlertCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                        <p className="text-sm text-blue-300/90 line-clamp-1">
+                          {finding.enhancements.plainEnglish.problem}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Enhancement indicators */}
+                    <div className="flex items-center gap-2 mt-3">
+                      {finding.evidence.length > 0 && (
+                        <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/30 rounded border border-border/40 text-xs text-muted-foreground/80">
                           <FileCode className="w-3.5 h-3.5" />
                           <span className="font-mono">
                             {finding.evidence[0].file}:{finding.evidence[0].startLine}
                           </span>
+                          {finding.evidence.length > 1 && (
+                            <span className="text-muted-foreground/60">
+                              +{finding.evidence.length - 1}
+                            </span>
+                          )}
                         </div>
-                        {finding.evidence.length > 1 && (
-                          <span className="text-muted-foreground/60">
-                            +{finding.evidence.length - 1} more
-                          </span>
-                        )}
-                      </div>
-                    )}
+                      )}
+                      {finding.enhancements?.aiPrompt && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-purple-500/10 rounded border border-purple-500/20 text-xs text-purple-400">
+                          <Bot className="w-3 h-3" />
+                          <span>AI Help</span>
+                        </div>
+                      )}
+                      {finding.enhancements?.fixSteps && finding.enhancements.fixSteps.length > 0 && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-emerald-500/10 rounded border border-emerald-500/20 text-xs text-emerald-400">
+                          {finding.enhancements.fixSteps.length} steps
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-4 shrink-0">

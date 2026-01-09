@@ -12,6 +12,7 @@ VibeCheck scans your codebase for security issues and generates a structured JSO
 - **Auto-Fix**: Apply security patches automatically with the `--apply-fixes` flag
 - **Custom Rules**: Write your own security rules in YAML without touching TypeScript
 - **Artifact Viewer**: Beautiful web UI to explore findings, filter by severity, and export reports
+- **AI-Native Developer Mode**: Plain English explanations, step-by-step fix wizards, and "Copy to AI" prompts for developers who build with AI assistants
 - **Local-Only**: Your code never leaves your machine. The UI runs entirely in your browser with IndexedDB storage
 - **Policy Engine**: Configurable risk thresholds and profiles for CI/CD integration
 - **SARIF Export**: Generate SARIF files for GitHub Security tab integration
@@ -135,6 +136,7 @@ Options:
   -r, --rules <path>       Load custom YAML security rules from directory or file
   -e, --exclude <glob>     Additional glob patterns to exclude (repeatable)
   --include-tests          Include test files in scan
+  --no-enhance             Disable AI-native developer enhancements (plain English, fix steps)
 ```
 
 #### Auto-Fix Security Issues
@@ -362,9 +364,17 @@ Policy evaluation engine:
 
 Next.js App Router application with:
 
-- Dashboard with severity breakdown and risk posture
-- Findings list with search and filtering
-- Detailed finding view with evidence and remediation
+- Dashboard with severity breakdown, risk posture, and "What to Fix First" priority list
+- Findings list with search, filtering, and batch operations
+- Detailed finding view with evidence, remediation, and AI-native enhancements
+- **AI-Native Developer Features:**
+  - Plain English explanations ("What's wrong" and "Why it matters")
+  - Step-by-step fix wizards with code examples
+  - Before/after code comparison
+  - "Copy to AI" prompts for Claude, ChatGPT, or other assistants
+  - View mode toggle (Simple/Technical/Full) for different expertise levels
+  - Smart waiver dialog with educational flow
+  - Batch export to Markdown, JSON, or CSV
 - Dark/light theme support
 - Markdown report export
 

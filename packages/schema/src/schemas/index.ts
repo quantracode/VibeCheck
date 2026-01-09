@@ -39,6 +39,15 @@ export {
   CorrelationPatternSchema,
   CorrelationDataSchema,
   FindingSchema,
+  // AI-Native Developer Enhancement schemas
+  UrgencySchema,
+  PlainEnglishSchema,
+  CodeChangeSchema,
+  CodeComparisonSchema,
+  FixStepSchema,
+  AIPromptSchema,
+  SeverityContextSchema,
+  FindingEnhancementsSchema,
   type Severity,
   type Category,
   type Remediation,
@@ -49,6 +58,15 @@ export {
   type CorrelationPattern,
   type CorrelationData,
   type Finding,
+  // AI-Native Developer Enhancement types
+  type Urgency,
+  type PlainEnglish,
+  type CodeChange,
+  type CodeComparison,
+  type FixStep,
+  type AIPrompt,
+  type SeverityContext,
+  type FindingEnhancements,
 } from "./finding.js";
 
 // Supply chain schemas and types (Phase 4)

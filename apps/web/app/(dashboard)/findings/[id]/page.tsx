@@ -25,6 +25,18 @@ import { ConfidenceMeter } from "@/components/ConfidenceMeter";
 import { EvidenceCard } from "@/components/EvidenceCard";
 import { ProofTraceTimeline } from "@/components/ProofTraceTimeline";
 import { AbuseRiskBadge, AbuseCategoryLabel } from "@/components/AbuseRiskBadge";
+import {
+  PlainEnglishCard,
+  SeverityContextCard,
+  CodeComparisonCard,
+  FixStepsWizard,
+  CopyToAIButton,
+  DetailViewToggle,
+  ViewModeProvider,
+  ViewModeContent,
+  SmartWaiverDialog,
+  AIChatDialog,
+} from "@/components/findings";
 import { cn } from "@/lib/utils";
 import type { Finding, EvidenceItem, AbuseClassification } from "@vibecheck/schema";
 
@@ -339,11 +351,15 @@ export default function FindingDetailPage() {
   }
 
   return (
+    <ViewModeProvider>
     <div className="space-y-6">
-      <Button variant="ghost" onClick={() => router.back()}>
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Back to findings
-      </Button>
+      <div className="flex items-center justify-between gap-4">
+        <Button variant="ghost" onClick={() => router.back()}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to findings
+        </Button>
+        <DetailViewToggle />
+      </div>
 
       {/* Header */}
       <motion.div
@@ -384,68 +400,129 @@ export default function FindingDetailPage() {
           <Fingerprint className="w-3 h-3" />
           {finding.fingerprint}
         </div>
+
+        {/* Quick Actions */}
+        <div className="flex flex-wrap items-center gap-2 pt-2">
+          <AIChatDialog finding={finding} />
+          <SmartWaiverDialog
+            finding={finding}
+            onWaive={(reason, justification) => {
+              console.log("Waived:", reason, justification);
+              // TODO: Integrate with waiver store
+            }}
+          />
+        </div>
       </motion.div>
 
-      {/* Evidence */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2, delay: 0.1 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <FileCode className="w-5 h-5" />
-              Evidence ({finding.evidence.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {finding.evidence.map((ev: EvidenceItem, i: number) => (
-              <EvidenceCard key={i} evidence={ev} />
-            ))}
-          </CardContent>
-        </Card>
-      </motion.div>
+      {/* AI-Native Developer Enhancements */}
+      {finding.enhancements && (
+        <>
+          {/* Plain English Explanation */}
+          {finding.enhancements.plainEnglish && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: 0.05 }}
+            >
+              <PlainEnglishCard plainEnglish={finding.enhancements.plainEnglish} />
+            </motion.div>
+          )}
 
-      {/* Abuse Classification */}
-      {finding.abuseClassification && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, delay: 0.12 }}
-        >
-          <AbuseClassificationSection classification={finding.abuseClassification} />
-        </motion.div>
+          {/* Severity Context */}
+          {finding.enhancements.severityContext && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: 0.07 }}
+            >
+              <SeverityContextCard
+                severityContext={finding.enhancements.severityContext}
+                severity={finding.severity}
+              />
+            </motion.div>
+          )}
+
+          {/* Code Comparison */}
+          {finding.enhancements.codeComparison && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: 0.09 }}
+            >
+              <CodeComparisonCard codeComparison={finding.enhancements.codeComparison} />
+            </motion.div>
+          )}
+        </>
       )}
 
-      {/* Claim */}
-      {finding.claim && (
+      {/* Evidence - Technical/Full view only */}
+      <ViewModeContent modes={["technical", "full"]}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, delay: 0.15 }}
-        >
-          <ClaimSection claim={finding.claim} />
-        </motion.div>
-      )}
-
-      {/* Proof Trace */}
-      {finding.proof && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, delay: 0.2 }}
+          transition={{ duration: 0.2, delay: 0.1 }}
         >
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Proof Trace</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FileCode className="w-5 h-5" />
+                Evidence ({finding.evidence.length})
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ProofTraceTimeline proof={finding.proof} />
+            <CardContent className="space-y-4">
+              {finding.evidence.map((ev: EvidenceItem, i: number) => (
+                <EvidenceCard key={i} evidence={ev} />
+              ))}
             </CardContent>
           </Card>
         </motion.div>
-      )}
+      </ViewModeContent>
+
+      {/* Abuse Classification - Technical/Full view only */}
+      <ViewModeContent modes={["technical", "full"]}>
+        {finding.abuseClassification && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, delay: 0.12 }}
+          >
+            <AbuseClassificationSection classification={finding.abuseClassification} />
+          </motion.div>
+        )}
+      </ViewModeContent>
+
+      {/* Claim - Technical/Full view only */}
+      <ViewModeContent modes={["technical", "full"]}>
+        {finding.claim && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, delay: 0.15 }}
+          >
+            <ClaimSection claim={finding.claim} />
+          </motion.div>
+        )}
+      </ViewModeContent>
+
+      {/* Proof Trace - Technical/Full view only */}
+      <ViewModeContent modes={["technical", "full"]}>
+        {finding.proof && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, delay: 0.2 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Proof Trace</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProofTraceTimeline proof={finding.proof} />
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </ViewModeContent>
 
       {/* Remediation */}
       <motion.div
@@ -455,6 +532,28 @@ export default function FindingDetailPage() {
       >
         <RemediationSection remediation={finding.remediation} />
       </motion.div>
+
+      {/* Fix Steps Wizard */}
+      {finding.enhancements?.fixSteps && finding.enhancements.fixSteps.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.27 }}
+        >
+          <FixStepsWizard steps={finding.enhancements.fixSteps} />
+        </motion.div>
+      )}
+
+      {/* AI Prompt Copy */}
+      {finding.enhancements?.aiPrompt && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.29 }}
+        >
+          <CopyToAIButton aiPrompt={finding.enhancements.aiPrompt} />
+        </motion.div>
+      )}
 
       {/* Links */}
       {finding.links && (finding.links.owasp || finding.links.cwe) && (
@@ -467,5 +566,6 @@ export default function FindingDetailPage() {
         </motion.div>
       )}
     </div>
+    </ViewModeProvider>
   );
 }

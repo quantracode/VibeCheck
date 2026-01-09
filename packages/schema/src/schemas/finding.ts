@@ -106,6 +106,95 @@ export const RemediationSchema = z.object({
   patch: z.string().optional(),
 });
 
+// ============================================================================
+// AI-Native Developer Enhancements
+// ============================================================================
+
+/** Urgency levels in plain English */
+export const UrgencySchema = z.enum([
+  "Fix immediately before deploying",
+  "Fix before next release",
+  "Should fix soon",
+  "Good to fix eventually",
+  "Nice to have",
+]);
+
+/** Plain English explanation of the finding */
+export const PlainEnglishSchema = z.object({
+  /** What's wrong in simple terms (e.g., "Anyone can delete data without logging in") */
+  problem: z.string(),
+  /** Why it matters - real-world impact */
+  impact: z.string(),
+  /** What could happen if exploited (optional worst case) */
+  worstCase: z.string().optional(),
+});
+
+/** Line-by-line change explanation */
+export const CodeChangeSchema = z.object({
+  /** Line number in the "after" code */
+  line: z.number(),
+  /** Explanation of what this change does */
+  explanation: z.string(),
+});
+
+/** Before/after code comparison */
+export const CodeComparisonSchema = z.object({
+  /** Current vulnerable code */
+  before: z.string(),
+  /** Secure version of the code */
+  after: z.string(),
+  /** Language for syntax highlighting */
+  language: z.string().default("typescript"),
+  /** Line-by-line explanation of changes */
+  changes: z.array(CodeChangeSchema).optional(),
+});
+
+/** A single step in the fix wizard */
+export const FixStepSchema = z.object({
+  /** Step number */
+  step: z.number(),
+  /** Title of this step */
+  title: z.string(),
+  /** Detailed action to take */
+  action: z.string(),
+  /** Optional code to copy */
+  code: z.string().optional(),
+  /** Optional command to run */
+  command: z.string().optional(),
+  /** How to verify this step worked */
+  verification: z.string().optional(),
+});
+
+/** AI-friendly prompt for getting help */
+export const AIPromptSchema = z.object({
+  /** Pre-formatted prompt for AI assistants */
+  template: z.string(),
+  /** Suggested follow-up questions */
+  followUpQuestions: z.array(z.string()).optional(),
+});
+
+/** Contextual severity explanation */
+export const SeverityContextSchema = z.object({
+  /** Plain English urgency */
+  urgency: UrgencySchema,
+  /** Why this severity level was assigned */
+  reasoning: z.string(),
+});
+
+/** Full enhancements bundle for AI-native developers */
+export const FindingEnhancementsSchema = z.object({
+  /** Plain English explanation */
+  plainEnglish: PlainEnglishSchema.optional(),
+  /** Before/after code comparison */
+  codeComparison: CodeComparisonSchema.optional(),
+  /** Step-by-step fix instructions */
+  fixSteps: z.array(FixStepSchema).optional(),
+  /** AI-friendly prompt for getting help */
+  aiPrompt: AIPromptSchema.optional(),
+  /** Contextual severity explanation */
+  severityContext: SeverityContextSchema.optional(),
+});
+
 export const ReferenceLinksSchema = z.object({
   owasp: z.string().url().optional(),
   cwe: z.string().url().optional(),
@@ -133,6 +222,8 @@ export const FindingSchema = z.object({
   correlationData: CorrelationDataSchema.optional(),
   /** References to related finding IDs/fingerprints (Phase 4) */
   relatedFindings: z.array(z.string()).optional(),
+  /** AI-native developer enhancements for clearer understanding */
+  enhancements: FindingEnhancementsSchema.optional(),
 });
 
 export type Severity = z.infer<typeof SeveritySchema>;
@@ -145,3 +236,13 @@ export type AbuseClassification = z.infer<typeof AbuseClassificationSchema>;
 export type CorrelationPattern = z.infer<typeof CorrelationPatternSchema>;
 export type CorrelationData = z.infer<typeof CorrelationDataSchema>;
 export type Finding = z.infer<typeof FindingSchema>;
+
+// AI-Native Developer Enhancement Types
+export type Urgency = z.infer<typeof UrgencySchema>;
+export type PlainEnglish = z.infer<typeof PlainEnglishSchema>;
+export type CodeChange = z.infer<typeof CodeChangeSchema>;
+export type CodeComparison = z.infer<typeof CodeComparisonSchema>;
+export type FixStep = z.infer<typeof FixStepSchema>;
+export type AIPrompt = z.infer<typeof AIPromptSchema>;
+export type SeverityContext = z.infer<typeof SeverityContextSchema>;
+export type FindingEnhancements = z.infer<typeof FindingEnhancementsSchema>;

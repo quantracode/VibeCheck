@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AbuseRiskCard } from "@/components/AbuseRiskCard";
 import { SupplyChainCard } from "@/components/SupplyChainCard";
+import { WhatToFixFirst } from "@/components/dashboard/WhatToFixFirst";
 
 export default function DashboardPage() {
   const { artifacts, selectedArtifactId, importArtifact } = useArtifactStore();
@@ -279,6 +280,9 @@ export default function DashboardPage() {
             <SeverityCard severity="low" count={severityCounts.low} />
             <SeverityCard severity="info" count={severityCounts.info} />
           </div>
+
+          {/* What to Fix First - AI-Native Developer Priority List */}
+          <WhatToFixFirst findings={findings} />
 
           {/* Abuse Risk Card */}
           <AbuseRiskCard findings={findings} />

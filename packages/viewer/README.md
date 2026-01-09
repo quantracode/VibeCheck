@@ -35,11 +35,23 @@ vibecheck view --no-open
 
 ## Features
 
-- **Dashboard**: Overview with severity breakdown and security score
-- **Findings List**: Searchable, filterable list of all findings
-- **Finding Details**: Deep dive into individual findings with code evidence
+- **Dashboard**: Overview with severity breakdown, security score, and "What to Fix First" priority list
+- **Findings List**: Searchable, filterable list with batch operations (select, export, waive)
+- **Finding Details**: Deep dive into individual findings with code evidence and AI-native enhancements
 - **Architecture View**: Visual graph of routes, middleware, and intent claims
-- **Report Export**: Copy markdown reports for sharing
+- **Report Export**: Export to Markdown, JSON, or CSV formats
+
+### AI-Native Developer Features
+
+The viewer includes special features for developers who build with AI assistants:
+
+- **Plain English Explanations**: Findings display "What's wrong" and "Why it matters" in simple terms
+- **Step-by-Step Fix Wizard**: Interactive guide through remediation with code examples
+- **Code Comparison**: Side-by-side before/after code snippets
+- **Copy to AI Button**: One-click copy of AI prompts for Claude, ChatGPT, or other assistants
+- **View Mode Toggle**: Switch between Simple/Technical/Full detail levels
+- **Smart Waivers**: Educational flow when waiving findings, ensuring developers understand the risk
+- **AI Chat Dialog**: Ask questions about findings (local simulation with pattern-based responses)
 
 ## How Auto-Loading Works
 

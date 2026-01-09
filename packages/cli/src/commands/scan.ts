@@ -17,6 +17,7 @@ import {
 import { hashPath } from "../utils/fingerprint.js";
 import { getGitInfo, getRepoName } from "../utils/git-info.js";
 import { applyPatches } from "../utils/apply-patches.js";
+import { enhanceFindings } from "../utils/finding-enhancer.js";
 import {
   loadRulesFromDirectory,
   validateCustomRules,
@@ -89,6 +90,8 @@ export interface ScanOptions {
   force: boolean;
   /** Path to custom rules directory or file */
   rules?: string;
+  /** Add AI-native developer enhancements to findings (default: true) */
+  enhance: boolean;
 }
 
 const DEFAULT_OUTPUT_DIR = "vibecheck-artifacts";
@@ -653,9 +656,18 @@ export async function executeScan(
     }
   }
 
+  // Enhance findings with AI-native developer features (default: enabled)
+  let enhancedFindings = findings;
+  if (options.enhance !== false) {
+    const enhanceSpinner = new Spinner("Adding AI-native developer enhancements");
+    enhanceSpinner.start();
+    enhancedFindings = enhanceFindings(findings);
+    enhanceSpinner.succeed(`Enhanced ${enhancedFindings.length} finding(s) with plain English explanations`);
+  }
+
   // Create artifact
   const artifact = createArtifact(
-    findings,
+    enhancedFindings,
     absoluteTarget,
     initialContext.fileIndex.allSourceFiles.length,
     options.repoName,
@@ -871,6 +883,10 @@ export function registerScanCommand(program: Command): void {
       "-r, --rules <path>",
       "Path to directory containing custom YAML rules or a single YAML rule file"
     )
+    .option(
+      "--no-enhance",
+      "Disable AI-native developer enhancements (plain English, fix steps, AI prompts)"
+    )
     .addHelpText(
       "after",
       `
@@ -928,6 +944,7 @@ Default excludes:
         applyFixes: Boolean(cmdOptions.applyFixes),
         force: Boolean(cmdOptions.force),
         rules: cmdOptions.rules as string | undefined,
+        enhance: cmdOptions.enhance !== false, // default true, --no-enhance sets to false
       };
 
       const exitCode = await executeScan(targetDir, options);

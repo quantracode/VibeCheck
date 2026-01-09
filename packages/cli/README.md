@@ -167,6 +167,7 @@ vibecheck view
 | `--apply-fixes` | Apply patches from findings after scan | `false` |
 | `--force` | Skip confirmation when applying patches | `false` |
 | `-r, --rules <path>` | Load custom YAML rules from directory or file | - |
+| `--no-enhance` | Disable AI-native developer enhancements | `false` |
 
 ### Default Excludes
 
@@ -629,6 +630,27 @@ With `--emit-intent-map`, the scan artifact includes coverage metrics:
 ```bash
 # Generate intent map
 vibecheck scan ./my-project --emit-intent-map --out scan.json
+
+# Disable AI-native developer enhancements
+vibecheck scan ./my-project --no-enhance
+```
+
+## AI-Native Developer Enhancements
+
+By default, VibeCheck enriches findings with AI-native developer features:
+
+- **Plain English Explanations**: "What's wrong" and "Why it matters" in simple terms
+- **Severity Context**: Human-readable urgency levels ("Fix immediately before deploying", etc.)
+- **Fix Steps**: Step-by-step remediation guides with code examples
+- **AI Prompts**: Ready-to-copy prompts for Claude, ChatGPT, or other AI assistants
+- **Code Comparison**: Before/after code snippets showing the fix
+
+These enhancements appear in the web viewer and are included in the artifact JSON under `finding.enhancements`.
+
+To disable enhancements (for smaller artifacts or CI pipelines):
+
+```bash
+vibecheck scan --no-enhance
 ```
 
 ## Architecture
