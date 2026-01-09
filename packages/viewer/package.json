@@ -1,6 +1,6 @@
 {
   "name": "@quantracode/vibecheck-viewer",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Web viewer for VibeCheck security scan results",
   "type": "module",
   "files": [
